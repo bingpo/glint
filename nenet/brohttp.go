@@ -406,7 +406,8 @@ func (t *Tabs) Send() ([]string, string, error) {
 	defer cancel()
 	subtabctx, subtabcancel := context.WithCancel(ctx)
 	defer subtabcancel()
-	ctx, cancel = context.WithTimeout(subtabctx, time.Minute*3)
+	zzctx, zzcancel := context.WithTimeout(subtabctx, time.Second*20)
+	defer zzcancel()
 	//ctx, cancel = context.WithTimeout(ctx, time.Second*20)
 	t.mu.Lock()
 	t.PackCtx = &ctx
@@ -443,7 +444,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 	// ACtx, _ := context.WithTimeout(*t.Ctx, time.Second*120)
 	var domhtml string
 	err = chromedp.Run(
-		ctx,
+		zzctx,
 		fetch.Enable(),
 		chromedp.Navigate(rawUrl),
 		//chromedp.OuterHTML("html", &res, chromedp.BySearch),
