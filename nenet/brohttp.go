@@ -456,7 +456,11 @@ func (t *Tabs) Send() ([]string, string, error) {
 		}
 	}
 	// for
-	tctx, tcancel = context.WithTimeout(*t.Ctx, time.Duration(time.Second*3))
+	//tctx, tcancel = context.WithTimeout(*t.Ctx, time.Duration(time.Second*3))
+
+	subctx, subcancel := context.WithCancel(*t.Ctx)
+	defer subcancel()
+	tctx, tcancel = context.WithTimeout(subctx, time.Second*3)
 	defer tcancel()
 	for {
 		select {
@@ -464,13 +468,18 @@ func (t *Tabs) Send() ([]string, string, error) {
 			htmls = append(htmls, html)
 		case <-tctx.Done():
 			//btimeout = true
-			cancel()
+
 			//最后获取一次经过dom渲染的xss
 
-			ttctx, fcancel := context.WithTimeout(t.GetExecutor(), time.Duration(time.Second*3))
-			defer fcancel()
-			chromedp.OuterHTML("html", &domhtml, chromedp.ByQuery).Do(ttctx)
+			c := chromedp.FromContext(ctx)
+			ctx := cdp.WithExecutor(ctx, c.Target)
+
+			subctx, _ := context.WithCancel(ctx)
+			newctx, cancel3 := context.WithTimeout(subctx, time.Second*3)
+			defer cancel3()
+			chromedp.OuterHTML("html", &domhtml, chromedp.ByQuery).Do(newctx)
 			htmls = append(htmls, domhtml)
+			cancel()
 			goto quit
 		case <-(*t.TaskCtx).Done():
 			//logger.Warning("xss插件收到任务过期,中断发包")
