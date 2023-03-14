@@ -403,8 +403,11 @@ func (t *Tabs) Send() ([]string, string, error) {
 	t.stopSourceCh = make(chan struct{})
 	// time.Sleep(5)
 	ctx, cancel := t.newSpiderTab()
-	ctx, cancel = context.WithTimeout(ctx, time.Second*20)
-
+	defer cancel()
+	subtabctx, subtabcancel := context.WithCancel(ctx)
+	defer subtabcancel()
+	ctx, cancel = context.WithTimeout(subtabctx, time.Minute*3)
+	//ctx, cancel = context.WithTimeout(ctx, time.Second*20)
 	t.mu.Lock()
 	t.PackCtx = &ctx
 	t.PackCancel = &cancel
@@ -479,13 +482,13 @@ func (t *Tabs) Send() ([]string, string, error) {
 			defer cancel3()
 			chromedp.OuterHTML("html", &domhtml, chromedp.ByQuery).Do(newctx)
 			htmls = append(htmls, domhtml)
-			cancel()
+			//cancel()
 			goto quit
 		case <-(*t.TaskCtx).Done():
 			//logger.Warning("xss插件收到任务过期,中断发包")
 			(*t.Cancel)()
 			(*t.PackCancel)()
-			cancel()
+			//cancel()
 			//goto quit
 			return htmls, "", errors.New("xss error")
 		}
