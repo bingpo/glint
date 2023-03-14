@@ -403,7 +403,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 	t.stopSourceCh = make(chan struct{})
 	// time.Sleep(5)
 	ctx, cancel := t.newSpiderTab()
-	defer cancel()
+	// defer cancel()
 	subtabctx, subtabcancel := context.WithCancel(ctx)
 	defer subtabcancel()
 	zzctx, zzcancel := context.WithTimeout(subtabctx, time.Second*20)
