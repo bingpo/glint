@@ -475,7 +475,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 			ctx := cdp.WithExecutor(ctx, c.Target)
 
 			subctx, _ := context.WithCancel(ctx)
-			newctx, cancel3 := context.WithTimeout(subctx, time.Second*3)
+			newctx, cancel3 := context.WithTimeout(subctx, time.Second*1)
 			defer cancel3()
 			chromedp.OuterHTML("html", &domhtml, chromedp.ByQuery).Do(newctx)
 			htmls = append(htmls, domhtml)
