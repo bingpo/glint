@@ -34,7 +34,7 @@ func TestXSS(t *testing.T) {
 
 	var TaskConfig config.TaskConfig
 	TaskYamlConfig := config.TaskYamlConfig{}
-	TaskYamlConfig.Proxy = ""
+	TaskYamlConfig.Proxy = "127.0.0.1:7777"
 	TaskYamlConfig.NoHeadless = false
 	TaskYamlConfig.TabRunTimeout = 1000 * time.Second
 	TaskYamlConfig.ScanDepth = 10
@@ -49,7 +49,7 @@ func TestXSS(t *testing.T) {
 	}
 	// defer Spider.Close()
 	var PluginWg sync.WaitGroup
-	data, _ := config.ReadResultConf("../json_testfile/xss_test3.json")
+	data, _ := config.ReadResultConf("../json_testfile/xss_pikachu.json")
 
 	myfunc := []plugin.PluginCallback{}
 	myfunc = append(myfunc, xsschecker.CheckXss)

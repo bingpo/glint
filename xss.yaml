@@ -47,11 +47,11 @@ xss:
         CheckTag: "key",
         CheckType: "Value",
       },
-      {
-        PayLoad: "'><flag>//",
-        CheckTag: "flag",
-        CheckType: "Value",
-      }, 
+      # {
+      #   PayLoad: "'><flag>//",
+      #   CheckTag: "flag",
+      #   CheckType: "Value",
+      # }, 
     ]
   script:
     [
