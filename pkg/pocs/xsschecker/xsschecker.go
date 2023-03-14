@@ -372,8 +372,12 @@ func DoCheckXss(
 	)
 	payloadsdata, err := payload.LoadPayloadData(config.DefaultXssConfigPath)
 	if err != nil {
-		return nil, errors.New("empty to xss payload ")
+		payloadsdata, err = payload.LoadPayloadData(config.TesXssConfigPath)
+		if err != nil {
+			return nil, errors.New("empty to xss payload ")
+		}
 	}
+
 	var Occs []xssOcc
 	payloadinfo := make(map[string]stf)
 

@@ -254,6 +254,7 @@ const (
 const (
 	DefaultConfigPath    string = "itop_task.json"
 	DefaultXssConfigPath string = "xss.yaml"
+	TesXssConfigPath     string = "../xss.yaml"
 	DefaultSocket        string = ""
 	DefaultConfigType    string = "json"
 	ConfirmSocket        bool   = true

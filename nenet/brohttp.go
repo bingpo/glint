@@ -438,6 +438,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 	}
 	//logger.Info(rawUrl)
 	// ACtx, _ := context.WithTimeout(*t.Ctx, time.Second*120)
+	var domhtml string
 	err = chromedp.Run(
 		ctx,
 		fetch.Enable(),
@@ -465,10 +466,10 @@ func (t *Tabs) Send() ([]string, string, error) {
 			//btimeout = true
 			cancel()
 			//最后获取一次经过dom渲染的xss
-			var domhtml string
-			ttctx, fcancel := context.WithTimeout(*t.Ctx, time.Duration(time.Second*3))
+
+			ttctx, fcancel := context.WithTimeout(t.GetExecutor(), time.Duration(time.Second*3))
 			defer fcancel()
-			chromedp.OuterHTML("html", &domhtml, chromedp.BySearch).Do(ttctx)
+			chromedp.OuterHTML("html", &domhtml, chromedp.ByQuery).Do(ttctx)
 			htmls = append(htmls, domhtml)
 			goto quit
 		case <-(*t.TaskCtx).Done():
