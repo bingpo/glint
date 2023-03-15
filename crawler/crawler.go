@@ -463,7 +463,7 @@ func (tab *Tab) ListenTarget(extends interface{}) {
 					} else {
 						req.GroupsId = "Normal"
 					}
-					fmt.Println("Pre add Url:", aurora.Red(req.URL.String()))
+					//fmt.Println("Pre add Url:", aurora.Red(req.URL.String()))
 
 					tab.AddResultRequest(req)
 				}
