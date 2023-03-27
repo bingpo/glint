@@ -77,16 +77,14 @@ func Test_customjs(t *testing.T) {
 				log.Fatalf("client.RouteChat failed: %v", err)
 			}
 			log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
-			in.GetReport().Fields["Name"].GetStringValue()
+			fmt.Println(in.GetReport().Fields["Name"].GetStringValue())
 		}
 	}()
 
 	data := pb.JsonRequest{Details: m.GetStructValue()}
-	//for _, note := range notes {
 	if err := stream.Send(&data); err != nil {
 		log.Fatalf("client.RouteChat: stream.Send(%v) failed: %v", data, err)
 	}
-	//}
 
 	stream.CloseSend()
 	<-waitc

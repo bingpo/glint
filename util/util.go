@@ -24,13 +24,16 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 	"unsafe"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/shirou/gopsutil/v3/cpu"
 
 	// conf2 "github.com/jweny/pocassist/pkg/conf"
@@ -45,6 +48,14 @@ import (
 
 var RRate = Rate{}
 var IsSetup bool
+
+type FileType struct {
+	Filename    string
+	Uri         string
+	Hash        string
+	Filecontent []byte
+	Synhash     string
+}
 
 func Setup() {
 	// 请求限速 limiter 初始化
@@ -1098,4 +1109,100 @@ func Call(m map[string]interface{}, name string, params ...interface{}) (result 
 	}
 	result = f.Call(in)
 	return
+}
+
+var (
+	// 定义一些常见的停用词，可以根据需要添加或删除
+	stopwords = map[string]bool{
+		"a": true, "an": true, "and": true, "are": true, "as": true, "at": true,
+		"be": true, "by": true,
+		"for": true, "from": true,
+		"has": true, "he": true, "her": true, "his": true,
+		"in": true, "is": true, "it": true,
+		"of": true, "on": true, "or": true,
+		"that": true, "the": true, "this": true, "to": true,
+		"was": true, "were": true, "with": true,
+	}
+
+	// 定义一个正则表达式，用于去除文本中的非字母字符
+	regex = regexp.MustCompile(`[^a-zA-Z]+`)
+)
+
+// // GenerateSynHash 将输入的文本转换成一个哈希值
+// func GenerateSynHash(text string) string {
+// 	// 将文本转换成小写，并去除非字母字符
+// 	text = strings.ToLower(text)
+// 	text = regex.ReplaceAllString(text, " ")
+
+// 	// 分词，去除停用词，词干化
+// 	words := strings.Split(text, " ")
+// 	var filtered []string
+// 	for _, word := range words {
+// 		if _, ok := stopwords[word]; !ok {
+// 			filtered = append(filtered, word)
+// 		}
+// 	}
+// 	filtered = stemWords(filtered)
+
+// 	// 计算哈希值并返回
+// 	hash := fnv.New32a()
+// 	for _, word := range filtered {
+// 		hash.Write([]byte(word))
+// 	}
+// 	return string(hash.Sum32())
+// }
+
+// stemWords 对输入的单词列表进行词干化处理
+// func stemWords(words []string) []string {
+// 	var stemmed []string
+// 	for _, word := range words {
+// 		// 这里可以使用自己喜欢的词干化算法
+// 		// 这里使用的是Porter Stemming算法，需要安装porterstemmer包
+// 		stemmed = append(stemmed, porterstemmer.StemString(word))
+// 	}
+// 	return stemmed
+// }
+
+// 从网页中解析出js文件的信息，并存储到FileType结构体中
+func ParseJSFile(url string) (*FileType, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// 从网页中获取js文件的url和内容
+	jsUrl, ok := doc.Find("script[src]").Attr("src")
+	if !ok {
+		return nil, errors.New("JS file not found")
+	}
+	jsContentResp, err := http.Get(jsUrl)
+	if err != nil {
+		return nil, err
+	}
+	defer jsContentResp.Body.Close()
+	jsContent, err := ioutil.ReadAll(jsContentResp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// 计算文件的hash值和synhash值
+	hash := md5.Sum(jsContent)
+	hashStr := hex.EncodeToString(hash[:])
+	//synhashStr := synset.GenerateSynHash(string(jsContent))
+
+	// 创建FileType结构体实例并返回
+	fileType := &FileType{
+		Filename: filepath.Base(jsUrl),
+		Uri:      jsUrl,
+		Hash:     hashStr,
+		// Filecontent: jsContent,
+		// Synhash:     synhashStr,
+	}
+	return fileType, nil
 }

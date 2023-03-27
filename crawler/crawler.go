@@ -104,28 +104,27 @@ type Eventchanel struct {
 }
 
 type Tab struct {
-	Ctx           *context.Context
-	Cancel        context.CancelFunc
-	NavigateReq   model2.Request
-	ExtraHeaders  map[string]interface{}
-	ResultList    []*model2.Request
-	Eventchanel   Eventchanel
-	NavNetworkID  string
-	PageCharset   string
-	Scandeep      int //扫描深度
-	DocBodyNodeId cdp.NodeID
-	config        TabConfig
-
-	lock sync.Mutex
-
-	WG            sync.WaitGroup //当前Tab页的等待同步计数
-	collectLinkWG sync.WaitGroup
-	loadedWG      sync.WaitGroup //Loaded之后的等待计数
-	formSubmitWG  sync.WaitGroup //表单提交完毕的等待计数
-	removeLis     sync.WaitGroup //移除事件监听
-	domWG         sync.WaitGroup //DOMContentLoaded 的等待计数
-	fillFormWG    sync.WaitGroup //填充表单任务
-	Ratelimite    *util.Rate
+	Ctx             *context.Context
+	Cancel          context.CancelFunc
+	NavigateReq     model2.Request
+	ExtraHeaders    map[string]interface{}
+	ResultList      []*model2.Request
+	WebSiteFileList []util.FileType
+	Eventchanel     Eventchanel
+	NavNetworkID    string
+	PageCharset     string
+	Scandeep        int //扫描深度
+	DocBodyNodeId   cdp.NodeID
+	config          TabConfig
+	lock            sync.Mutex
+	WG              sync.WaitGroup //当前Tab页的等待同步计数
+	collectLinkWG   sync.WaitGroup
+	loadedWG        sync.WaitGroup //Loaded之后的等待计数
+	formSubmitWG    sync.WaitGroup //表单提交完毕的等待计数
+	removeLis       sync.WaitGroup //移除事件监听
+	domWG           sync.WaitGroup //DOMContentLoaded 的等待计数
+	fillFormWG      sync.WaitGroup //填充表单任务
+	Ratelimite      *util.Rate
 
 	IsHTTPS bool //插件扫描的网站是否有https
 }
@@ -389,7 +388,10 @@ func (tab *Tab) ListenTarget(extends interface{}) {
 					//XHR 允许AJAX 代码更新请求，因为它不刷新页面,有可能只刷新dom节点
 					// tab.Ratelimite.LimitWait()
 					if strings.HasSuffix(ev.Request.URL, ".js") {
-
+						if funk.Contains(ev.Request.URL, ".js") {
+							jsdata, _ := util.ParseJSFile(ev.Request.URL)
+							tab.AddResultJsRequest(jsdata)
+						}
 						a = fetch.ContinueRequest(ev.RequestID)
 					} else if util.GetScanDeepByUrl(ev.Request.URL) > int(tab.Scandeep) {
 						logger.Debug("AJAX request add Url forbiden because ScanDeep limit")
@@ -490,7 +492,7 @@ func (tab *Tab) ListenTarget(extends interface{}) {
 			// ev.
 			if !FilterKey(req.URL.String(), ForbidenKey) {
 				if !funk.Contains(tab.NavigateReq.URL.String(), req.URL.String()) {
-					if !(util.GetScanDeepByUrl(req.URL.String()) > int(tab.Scandeep)) || funk.Contains(req.URL.String(), "js") {
+					if !(util.GetScanDeepByUrl(req.URL.String()) > int(tab.Scandeep)) {
 						tab.AddResultRequest(req)
 					}
 					// logger.Println("EventWindowOpen Add crawer url:", req)
@@ -682,7 +684,6 @@ func (tab *Tab) HandleBindingCalled(event *runtime.EventBindingCalled) {
 		if !(util.GetScanDeepByUrl(bcPayload.Args[0]) > int(tab.Scandeep)) {
 			// tab.AddResultRequest(req)
 			tab.AddResultUrl(config.GET, bcPayload.Args[0], bcPayload.Args[1])
-
 		}
 
 	}
@@ -1153,6 +1154,13 @@ func (tab *Tab) AddResultRequest(req model2.Request) {
 	}
 	tab.lock.Lock()
 	tab.ResultList = append(tab.ResultList, &req)
+	tab.lock.Unlock()
+}
+
+func (tab *Tab) AddResultJsRequest(File *util.FileType) {
+	//这里额外添加站点状态信息
+	tab.lock.Lock()
+	tab.WebSiteFileList = append(tab.WebSiteFileList, *File)
 	tab.lock.Unlock()
 }
 

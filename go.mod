@@ -28,7 +28,7 @@ require (
 	github.com/urfave/cli/v2 v2.16.3
 	github.com/valyala/bytebufferpool v1.0.0
 	github.com/valyala/fasthttp v1.43.0
-	golang.org/x/net v0.5.0
+	golang.org/x/net v0.7.0
 	golang.org/x/time v0.3.0
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
 	google.golang.org/protobuf v1.28.1
@@ -37,7 +37,11 @@ require (
 	nhooyr.io/websocket v1.8.7
 )
 
-require github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
+require (
+	github.com/PuerkitoBio/goquery v1.8.1 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
+	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
+)
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
@@ -64,7 +68,7 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/grpc v1.53.0
 )
