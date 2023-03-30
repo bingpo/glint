@@ -49,7 +49,7 @@ import (
 var RRate = Rate{}
 var IsSetup bool
 
-type FileType struct {
+type SiteFile struct {
 	Filename    string
 	Uri         string
 	Hash        string
@@ -1164,26 +1164,34 @@ var (
 // }
 
 // 从网页中解析出js文件的信息，并存储到FileType结构体中
-func ParseJSFile(url string) (*FileType, error) {
+func ParseJSFile(url string) (*SiteFile, error) {
+	var jsContentResp *http.Response
+	var jsUrl string
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+	if funk.Contains(url, ".js") {
+		jsContentResp = resp
+		jsUrl = url
+	} else {
 
-	// 从网页中获取js文件的url和内容
-	jsUrl, ok := doc.Find("script[src]").Attr("src")
-	if !ok {
-		return nil, errors.New("JS file not found")
-	}
-	jsContentResp, err := http.Get(jsUrl)
-	if err != nil {
-		return nil, err
+		doc, err := goquery.NewDocumentFromReader(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		// 从网页中获取js文件的url和内容
+		jsUrl, ok := doc.Find("script[src]").Attr("src")
+		if !ok {
+			return nil, errors.New("JS file not found")
+		}
+		jsContentResp, err = http.Get(jsUrl)
+		if err != nil {
+			return nil, err
+		}
 	}
 	defer jsContentResp.Body.Close()
 	jsContent, err := ioutil.ReadAll(jsContentResp.Body)
@@ -1197,12 +1205,13 @@ func ParseJSFile(url string) (*FileType, error) {
 	//synhashStr := synset.GenerateSynHash(string(jsContent))
 
 	// 创建FileType结构体实例并返回
-	fileType := &FileType{
-		Filename: filepath.Base(jsUrl),
-		Uri:      jsUrl,
-		Hash:     hashStr,
-		// Filecontent: jsContent,
+	fileType := &SiteFile{
+		Filename:    filepath.Base(jsUrl),
+		Uri:         jsUrl,
+		Hash:        hashStr,
+		Filecontent: jsContent,
 		// Synhash:     synhashStr,
 	}
+
 	return fileType, nil
 }

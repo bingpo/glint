@@ -374,3 +374,19 @@ func Test_Name(t *testing.T) {
 
 	handleRequest(target)
 }
+
+func TestParseJSFile(t *testing.T) {
+	url := "http://192.168.166.2/pikachu/assets/js/ace-extra.min.js"
+	expectedFilename := "ace-extra.min.js"
+
+	fileType, err := util.ParseJSFile(url)
+
+	if err != nil {
+		t.Fatalf("Error parsing JS file: %v", err)
+	}
+
+	if fileType.Filename != expectedFilename {
+		t.Errorf("Expected filename %s, but got %s", expectedFilename, fileType.Filename)
+	}
+
+}

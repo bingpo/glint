@@ -109,7 +109,7 @@ type Tab struct {
 	NavigateReq     model2.Request
 	ExtraHeaders    map[string]interface{}
 	ResultList      []*model2.Request
-	WebSiteFileList []util.FileType
+	WebSiteFileList []util.SiteFile
 	Eventchanel     Eventchanel
 	NavNetworkID    string
 	PageCharset     string
@@ -157,8 +157,6 @@ func (tab *Tab) GetExecutor() context.Context {
 
 func AllocSubContextWithTimeOut(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	subctx, _ := context.WithCancel(ctx)
-	// defer cancel2()
-
 	newctx, cancel3 := context.WithTimeout(subctx, timeout)
 	return newctx, cancel3
 }
@@ -386,11 +384,13 @@ func (tab *Tab) ListenTarget(extends interface{}) {
 					ev.ResourceType == network.ResourceTypeXHR ||
 					ev.Request.URL == Domain1 {
 					//XHR 允许AJAX 代码更新请求，因为它不刷新页面,有可能只刷新dom节点
-					// tab.Ratelimite.LimitWait()
 					if strings.HasSuffix(ev.Request.URL, ".js") {
 						if funk.Contains(ev.Request.URL, ".js") {
-							jsdata, _ := util.ParseJSFile(ev.Request.URL)
-							tab.AddResultJsRequest(jsdata)
+							jsdata, err := util.ParseJSFile(ev.Request.URL)
+							if err != nil {
+								logger.Error(err.Error())
+							}
+							tab.AddResultJsRequest(*jsdata)
 						}
 						a = fetch.ContinueRequest(ev.RequestID)
 					} else if util.GetScanDeepByUrl(ev.Request.URL) > int(tab.Scandeep) {
@@ -620,7 +620,7 @@ func NewTab(spider *Spider, navigateReq model2.Request, config TabConfig) (*Tab,
 	if _, ok := tab.ExtraHeaders["HOST"]; ok {
 		delete(tab.ExtraHeaders, "HOST")
 	}
-	// tab.ExtraHeaders["Host"] = navigateReq.URL.Host
+
 	tab.Eventchanel.EventInfo = make(map[string]bool)
 	tab.Eventchanel.ButtonCheckUrl = make(chan bool, 1)
 	tab.Eventchanel.SubmitCheckUrl = make(chan bool, 1)
@@ -629,7 +629,7 @@ func NewTab(spider *Spider, navigateReq model2.Request, config TabConfig) (*Tab,
 	tab.Eventchanel.exit = make(chan int, 1)
 	tab.Ratelimite = config.Ratelimite
 	tab.Scandeep = config.Scandeep
-	// tab.Ratelimite.InitRate(config.QPS)
+
 	tab.ListenTarget(nil)
 	return &tab, nil
 }
@@ -1157,10 +1157,10 @@ func (tab *Tab) AddResultRequest(req model2.Request) {
 	tab.lock.Unlock()
 }
 
-func (tab *Tab) AddResultJsRequest(File *util.FileType) {
+func (tab *Tab) AddResultJsRequest(File util.SiteFile) {
 	//这里额外添加站点状态信息
 	tab.lock.Lock()
-	tab.WebSiteFileList = append(tab.WebSiteFileList, *File)
+	tab.WebSiteFileList = append(tab.WebSiteFileList, File)
 	tab.lock.Unlock()
 }
 
