@@ -26,27 +26,28 @@ type Result struct {
 }
 
 type CrawlerTask struct {
-	Browser       *Spider                      // 爬虫浏览器
-	HostName      string                       // 收集Uri
-	Scheme        string                       //
-	PluginBrowser *nenet.Spider                // 插件浏览器
-	RootDomain    string                       // 当前爬取根域名 用于子域名收集
-	Targets       []*model.Request             // 输入目标
-	Result        *Result                      // 最终结果
-	Config        *config.TaskYamlConfig       // 配置信息
-	smartFilter   SmartFilter                  // 过滤对象
-	Pool          *ants.Pool                   // 协程池
-	taskWG        sync.WaitGroup               // 等待协程池所有任务结束
-	crawledCount  int                          // 爬取过的数量
-	taskCountLock sync.Mutex                   // 已爬取的任务总数锁
-	TaskCtx       *context.Context             // 任务上下文，这个存储的是任务分配的CTX
-	Cancel        *context.CancelFunc          // 取消当前上下文
-	Ctx           *context.Context             // 当前上下文
-	QPS           int64                        //每秒请求速率
-	Scandeep      int                          //扫描深度
-	SocketMsg     *chan map[string]interface{} //消息通讯
-	IsSocket      bool
-	IsHTTPS       bool
+	Browser         *Spider                      // 爬虫浏览器
+	HostName        string                       // 收集Uri
+	Scheme          string                       //
+	PluginBrowser   *nenet.Spider                // 插件浏览器
+	RootDomain      string                       // 当前爬取根域名 用于子域名收集
+	Targets         []*model.Request             // 输入目标
+	Result          *Result                      // 最终结果
+	Config          *config.TaskYamlConfig       // 配置信息
+	smartFilter     SmartFilter                  // 过滤对象
+	Pool            *ants.Pool                   // 协程池
+	taskWG          sync.WaitGroup               // 等待协程池所有任务结束
+	crawledCount    int                          // 爬取过的数量
+	taskCountLock   sync.Mutex                   // 已爬取的任务总数锁
+	TaskCtx         *context.Context             // 任务上下文，这个存储的是任务分配的CTX
+	Cancel          *context.CancelFunc          // 取消当前上下文
+	Ctx             *context.Context             // 当前上下文
+	QPS             int64                        //每秒请求速率
+	Scandeep        int                          //扫描深度
+	SocketMsg       *chan map[string]interface{} //消息通讯
+	IsSocket        bool
+	IsHTTPS         bool
+	WebSiteFileList []util.SiteFile
 	// ScanSiteState util.ScanSiteState
 }
 
@@ -71,19 +72,21 @@ func (c *CrawlerTask) Reset() {
 	c.Scandeep = 0
 	c.SocketMsg = nil
 	c.IsSocket = false
+	c.WebSiteFileList = []util.SiteFile{}
 }
 
 type tabTask struct {
-	crawlerTask  *CrawlerTask
-	browser      *Spider
-	req          *model.Request
-	pool         *ants.Pool
-	Ratelimite   util.Rate
-	Scandeep     int //扫描深度
-	SocketMsg    *chan map[string]interface{}
-	IsSocket     bool
-	PageState    util.PageState
-	crawledCount *int
+	crawlerTask     *CrawlerTask
+	browser         *Spider
+	req             *model.Request
+	pool            *ants.Pool
+	Ratelimite      util.Rate
+	Scandeep        int //扫描深度
+	SocketMsg       *chan map[string]interface{}
+	IsSocket        bool
+	PageState       util.PageState
+	crawledCount    *int
+	WebSiteFileList *[]util.SiteFile
 }
 
 // 过滤模式
@@ -99,13 +102,15 @@ const (
 */
 func (t *CrawlerTask) generateTabTask(req *model.Request) *tabTask {
 	task := tabTask{
-		crawlerTask:  t,
-		browser:      t.Browser,
-		req:          req,
-		Scandeep:     t.Scandeep,
-		IsSocket:     t.IsSocket,
-		crawledCount: &t.crawledCount,
+		crawlerTask:     t,
+		browser:         t.Browser,
+		req:             req,
+		Scandeep:        t.Scandeep,
+		IsSocket:        t.IsSocket,
+		crawledCount:    &t.crawledCount,
+		WebSiteFileList: &t.WebSiteFileList,
 	}
+
 	task.Ratelimite.InitRate(uint(t.QPS))
 	return &task
 }
@@ -217,6 +222,7 @@ func (t *tabTask) Task() {
 		Ratelimite:              &t.Ratelimite,
 		IsHTTPS:                 t.crawlerTask.IsHTTPS,
 		Scandeep:                int(t.crawlerTask.Config.ScanDepth),
+		WebsitFileList:          t.WebSiteFileList,
 	}
 	tab, _ := NewTab(t.browser, *t.req, config)
 

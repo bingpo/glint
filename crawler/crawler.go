@@ -109,7 +109,7 @@ type Tab struct {
 	NavigateReq     model2.Request
 	ExtraHeaders    map[string]interface{}
 	ResultList      []*model2.Request
-	WebSiteFileList []util.SiteFile
+	WebSiteFileList *[]util.SiteFile
 	Eventchanel     Eventchanel
 	NavNetworkID    string
 	PageCharset     string
@@ -117,6 +117,7 @@ type Tab struct {
 	DocBodyNodeId   cdp.NodeID
 	config          TabConfig
 	lock            sync.Mutex
+	filelock        sync.RWMutex
 	WG              sync.WaitGroup //当前Tab页的等待同步计数
 	collectLinkWG   sync.WaitGroup
 	loadedWG        sync.WaitGroup //Loaded之后的等待计数
@@ -143,6 +144,7 @@ type TabConfig struct {
 	Ratelimite              *util.Rate
 	Scandeep                int  //扫描深度
 	IsHTTPS                 bool //插件扫描的网站是否有https
+	WebsitFileList          *[]util.SiteFile
 	//QPS                     uint //每秒请求速率
 }
 
@@ -620,7 +622,7 @@ func NewTab(spider *Spider, navigateReq model2.Request, config TabConfig) (*Tab,
 	if _, ok := tab.ExtraHeaders["HOST"]; ok {
 		delete(tab.ExtraHeaders, "HOST")
 	}
-
+	tab.WebSiteFileList = config.WebsitFileList
 	tab.Eventchanel.EventInfo = make(map[string]bool)
 	tab.Eventchanel.ButtonCheckUrl = make(chan bool, 1)
 	tab.Eventchanel.SubmitCheckUrl = make(chan bool, 1)
@@ -1030,10 +1032,8 @@ func (tab *Tab) collectHrefLinks() {
 		}
 		for _, attrMap := range attrs {
 			if !(util.GetScanDeepByUrl(attrMap[attrName]) > int(tab.Scandeep)) {
-				// tab.AddResultRequest(req)
 				tab.AddResultUrl("GET", attrMap[attrName], "DOM")
 			}
-			// tab.AddResultUrl("GET", attrMap[attrName], "DOM")
 		}
 	}
 }
@@ -1159,9 +1159,15 @@ func (tab *Tab) AddResultRequest(req model2.Request) {
 
 func (tab *Tab) AddResultJsRequest(File util.SiteFile) {
 	//这里额外添加站点状态信息
-	tab.lock.Lock()
-	tab.WebSiteFileList = append(tab.WebSiteFileList, File)
-	tab.lock.Unlock()
+	tab.filelock.Lock()
+	defer tab.filelock.Unlock()
+	for _, WebSiteFile := range *tab.WebSiteFileList {
+		if WebSiteFile.Hash == File.Hash {
+			return
+		}
+	}
+	logger.Info("添加站点文件:%s", File.Uri)
+	(*tab.WebSiteFileList) = append(*tab.WebSiteFileList, File)
 }
 
 /*
