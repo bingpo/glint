@@ -357,11 +357,6 @@ func (tc *TaskConfig) GetValue(key string) (reflect.Value, error) {
 		v := reflect.ValueOf(tc.Json.Exweb_scan_param) //获取reflect.Type类型
 		for i := 0; i < v.NumField(); i++ {
 			if v.Field(i).CanInterface() { //判断是否为可导出字段
-				// fmt.Printf("%s %s = %v -tag:%s \n",
-				// 	t.Field(i).Name,
-				// 	t.Field(i).Type,
-				// 	v.Field(i).Interface(),
-				// 	t.Field(i).Tag)
 				if strings.EqualFold(t.Field(i).Name, key) {
 					return v.Field(i), nil
 				}
