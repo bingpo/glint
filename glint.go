@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"glint/ast"
@@ -10,6 +11,7 @@ import (
 	"glint/dbmanager"
 	"glint/global"
 	"glint/logger"
+	pb "glint/mesonrpc"
 	"glint/model"
 	"glint/nenet"
 	"glint/netcomm"
@@ -36,6 +38,7 @@ import (
 	"glint/plugin"
 	"glint/proxy"
 	"glint/util"
+	"io"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
@@ -47,10 +50,11 @@ import (
 	"sync"
 	"time"
 
-	_ "embed"
-
 	"github.com/thoas/go-funk"
 	"github.com/urfave/cli/v2"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // var ConfirmSocket bool
@@ -70,19 +74,18 @@ var ConfigpPath string
 var Plugins cli.StringSlice
 var WebSocket string
 var Socket string
-
 var GenerateCA bool
 var Dbconect bool
 var Configtype string
 var IsStartProxyMode bool //是否开启半自动代理模式
+var EnalbeJackdaw bool
 
 //go:embed version
 var Version string
 
 type Task struct {
-	TaskId  int
-	HostIds []int
-
+	TaskId        int
+	HostIds       []int
 	XssSpider     nenet.Spider
 	Targets       []*model.Request
 	TaskConfig    config.TaskConfig
@@ -179,7 +182,9 @@ func main() {
 		UsageText: "glint [global options] url1 url2 url3 ... (must be same host)",
 		Version:   Version, // "v0.1.2"
 		Authors:   []*cli.Author{&author},
+
 		Flags: []cli.Flag{
+
 			//设置配置文件路径
 			&cli.StringFlag{
 				Name:        "config",
@@ -188,6 +193,7 @@ func main() {
 				Value:       config.DefaultConfigPath,
 				Destination: &ConfigpPath,
 			},
+
 			//设置需要开启的插件
 			&cli.StringSliceFlag{
 				Name:        "plugin",
@@ -223,6 +229,7 @@ func main() {
 				Value:       config.DefaultSocket,
 				Destination: &Socket,
 			},
+
 			&cli.BoolFlag{
 				Name:        "passiveproxy",
 				Aliases:     []string{},
@@ -230,6 +237,7 @@ func main() {
 				Value:       false,
 				Destination: &config.PassiveProxy,
 			},
+
 			&cli.BoolFlag{
 				Name:        "generate-ca-cert",
 				Aliases:     []string{},
@@ -237,6 +245,7 @@ func main() {
 				Value:       false,
 				Destination: &GenerateCA,
 			},
+
 			&cli.StringFlag{
 				Name:        "cert",
 				Aliases:     []string{},
@@ -244,6 +253,7 @@ func main() {
 				Value:       "",
 				Destination: &Cert,
 			},
+
 			&cli.StringFlag{
 				Name:        "key",
 				Aliases:     []string{},
@@ -258,6 +268,14 @@ func main() {
 				Usage:       "Wherever Database Connect",
 				Value:       false,
 				Destination: &Dbconect,
+			},
+
+			&cli.BoolFlag{
+				Name:        "EnableJackdaw",
+				Aliases:     []string{},
+				Usage:       "Enable Jackdaw Process",
+				Value:       false,
+				Destination: &EnalbeJackdaw,
 			},
 		},
 		Action: run,
@@ -280,10 +298,6 @@ func run(c *cli.Context) error {
 	} else if strings.ToLower(Socket) != "" {
 		SocketHandler()
 	} else if config.PassiveProxy {
-		// if c.Args().Len() == 0 {
-		// 	logger.Error("url must be set")
-		// 	return errors.New("url must be set")
-		// }
 		t := Task{TaskId: 9564}
 
 		config := tconfig{}
@@ -293,13 +307,6 @@ func run(c *cli.Context) error {
 		t.Init()
 		CmdHandler(c, &t, config)
 	} else {
-		// go func() {
-		// 	ip := "0.0.0.0:6061"
-		// 	if err := http.ListenAndServe(ip, nil); err != nil {
-		// 		fmt.Printf("start pprof failed on %s\n", ip)
-		// 	}
-		// }()
-
 		if c.Args().Len() == 0 {
 			logger.Error("url must be set")
 			return errors.New("url must be set")
@@ -309,13 +316,8 @@ func run(c *cli.Context) error {
 		config := tconfig{}
 		config.EnableCrawler = true
 		config.InstallDb = false
-
 		CmdHandler(c, &t, config)
-
 		errc := make(chan error, 1)
-		// go func() {
-		// 	errc <- s.Serve(l)
-		// }()
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, os.Interrupt)
 
@@ -429,7 +431,6 @@ func (t *Task) EnablePluginsByUri(
 			t.AddPlugins("CONTENTSEARCH", plugin.CONTENTSEARCH, contentsearch.Start_text_Macth, originUrls, isSocket, true, 0., false, HttpsCert, HttpsCertKey, isexport)
 		}
 	}
-
 }
 
 // 一个脚本检测一个网页
@@ -480,6 +481,68 @@ func (t *Task) EnablePluginsALLURL(
 	}
 }
 
+// 自定义js脚本，此代码与Jackdaw通讯
+// 这个和插件分开处理。
+func (t *Task) RunCustomJS(
+	originUrls map[string]interface{},
+	HttpsCert string,
+	HttpsCertKey string,
+	isexport bool,
+	isSocket bool) {
+	const (
+		port = "50051"
+	)
+
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	address := "127.0.0.1:" + port
+	conn, err := grpc.Dial(address, opts...)
+	if err != nil {
+		logger.Error("fail to dial: %v", err)
+	}
+
+	defer conn.Close()
+	client := pb.NewRouteGuideClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
+	defer cancel()
+
+	stream, err := client.RouteChat(ctx)
+	if err != nil {
+		logger.Error("%s", err.Error())
+	}
+
+	waitc := make(chan struct{})
+	go func() {
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				// read done.
+				close(waitc)
+				return
+			}
+			if err != nil {
+				logger.Error("client.RouteChat Recv failed: %v", err)
+			}
+			fmt.Println(in.GetReport().Fields["Name"].GetStringValue())
+		}
+	}()
+
+	for _, v := range originUrls {
+		m, err := structpb.NewValue(v)
+		if err != nil {
+			logger.Error("client.RouteChat NewValue m failed: %v", err)
+		}
+		data := pb.JsonRequest{Details: m.GetStructValue()}
+		if err := stream.Send(&data); err != nil {
+			logger.Error("client.RouteChat JsonRequest failed: %v", err)
+		}
+	}
+
+	stream.CloseSend()
+	//
+
+}
+
 // 只检测主域名
 func (t *Task) EnablePluginsByDomain(
 	originUrls map[string]interface{},
@@ -522,6 +585,8 @@ func (t *Task) AddPlugins(
 	isExportJson bool,
 
 ) {
+	//配置插件信息
+
 	myfunc := []plugin.PluginCallback{}
 	myfunc = append(myfunc, callback)
 	var Payloadcarrier *nenet.Spider
@@ -727,8 +792,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		err       error
 		crawtasks []*crawler.CrawlerTask
 		Results   []*crawler.Result
-
-		Duts []crawler.DatabeseUrlTree
+		Duts      []crawler.DatabeseUrlTree
 	)
 
 	ALLURLS := make(map[string][]interface{}, 0)
@@ -868,6 +932,10 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		t.EnablePluginsALLURL(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 		t.EnablePluginsByUri(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 		t.EnablePluginsByDomain(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
+
+		if EnalbeJackdaw {
+			t.RunCustomJS(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
+		}
 
 		t.PluginWg.Wait()
 		//清空插件数据

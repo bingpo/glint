@@ -259,6 +259,7 @@ const (
 	DefaultConfigType    string = "json"
 	ConfirmSocket        bool   = true
 	UnconfirmSocket      bool   = false
+	EnableJackdaw        bool   = false
 )
 
 var GlobalUserNameList = []string{}

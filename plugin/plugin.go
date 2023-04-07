@@ -243,8 +243,8 @@ func (p *Plugin) Run(args PluginOption) error {
 					}
 				}(type_name, urlinter.(map[string]interface{}))
 			}
-
 		}
+		//这里发送文件
 
 	} else {
 		var urlsinfo []interface{}

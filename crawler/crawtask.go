@@ -22,7 +22,8 @@ type Result struct {
 	SubDomainList []string         // 子域名列表
 	HOSTNAME      string           // 收集Uri
 	resultLock    sync.Mutex       // 合并结果时加锁
-	Hostid        int64            //域名id，实际上是和前端分不开原因
+	Hostid        int64            // 域名id，实际上是和前端分不开原因
+	WebsitFiles   []util.SiteFile  // 站点文件
 }
 
 type CrawlerTask struct {
