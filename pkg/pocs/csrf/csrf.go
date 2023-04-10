@@ -53,7 +53,7 @@ var mkey string = ""
 func Csrfeval(args *plugin.GroupData) (*util.ScanResult, bool, error) {
 
 	group := args
-	ORIGIN_URL := `http://192.168.166.8/vulnerabilities/csrf`
+	ORIGIN_URL := `http://192.168.166.2/vulnerabilities/csrf`
 	// t := time.NewTimer(time.Millisecond * 200)
 	var Param layers.PluginParam
 	ct := layers.CheckType{}

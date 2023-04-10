@@ -94,6 +94,7 @@ type Task struct {
 	Ctx           *context.Context //当前任务的现场
 	Cancel        *context.CancelFunc
 	lock          *sync.Mutex
+	jslock        *sync.Mutex //自定义js锁
 	Dm            *dbmanager.DbManager
 	ScartTime     time.Time
 	EndTime       time.Time
@@ -150,6 +151,12 @@ func (t *Task) ClearData() {
 	t.stoppluginmsg = nil
 	t.Status = 0
 	t.ScanType = 0
+}
+
+type crawSiteList struct {
+	taskid   int
+	hostid   int
+	FileInfo util.SiteFile
 }
 
 func main() {
@@ -485,6 +492,7 @@ func (t *Task) EnablePluginsALLURL(
 // 这个和插件分开处理。
 func (t *Task) RunCustomJS(
 	originUrls map[string]interface{},
+	FileList *[]crawSiteList,
 	HttpsCert string,
 	HttpsCertKey string,
 	isexport bool,
@@ -528,19 +536,41 @@ func (t *Task) RunCustomJS(
 	}()
 
 	for _, v := range originUrls {
-		m, err := structpb.NewValue(v)
-		if err != nil {
-			logger.Error("client.RouteChat NewValue m failed: %v", err)
+		if value, ok := v.(map[string]interface{}); ok {
+			value["isFile"] = false
+			m, err := structpb.NewValue(value)
+			if err != nil {
+				logger.Error("client.RouteChat NewValue m failed: %v", err)
+			}
+			data := pb.JsonRequest{Details: m.GetStructValue()}
+			if err := stream.Send(&data); err != nil {
+				logger.Error("client.RouteChat JsonRequest failed: %v", err)
+			}
 		}
+	}
+
+	for _, Files := range *FileList {
+		m, _ := structpb.NewValue(map[string]interface{}{
+			"Uri":         Files.FileInfo.Uri,
+			"FileName":    Files.FileInfo.Filename,
+			"Hash":        Files.FileInfo.Hash,
+			"FileContent": Files.FileInfo.Filecontent,
+			"isFile":      true,
+		})
 		data := pb.JsonRequest{Details: m.GetStructValue()}
 		if err := stream.Send(&data); err != nil {
 			logger.Error("client.RouteChat JsonRequest failed: %v", err)
 		}
 	}
 
-	stream.CloseSend()
-	//
-
+	select {
+	case <-waitc:
+		stream.CloseSend()
+		return
+	case <-ctx.Done():
+		stream.CloseSend()
+		return
+	}
 }
 
 // 只检测主域名
@@ -800,6 +830,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 	ALLURI := make(map[string][]interface{}, 0)
 	URISList := make(map[string]interface{}, 0)
 	JSONALLURLS := make(map[string][]ast.JsonUrl, 0)
+	FileList := []crawSiteList{}
 
 	// domain := make(map[string][]interface{}, 0)
 	// element := make(map[string]interface{}, 0)
@@ -832,6 +863,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 			// if !util.Isdomainonline(Target.URL.String()) {
 			// 	continue
 			// }
+
 			Crawtask, err := crawler.NewCrawlerTask(t.Ctx, Target, t.TaskConfig)
 			Crawtask.Result.Hostid = Target.DomainId
 
@@ -857,6 +889,12 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 			crawtask.Waitforsingle()
 
 			result := crawtask.Result
+
+			//handle sitefile
+			for _, sitefile := range crawtask.WebSiteFileList {
+				FileList = append(FileList, crawSiteList{taskid: t.TaskId, hostid: int(crawtask.Result.Hostid), FileInfo: sitefile})
+			}
+
 			// result.Hostid = crawtask.Result.Hostid
 			// result.HOSTNAME = crawtask.HostName
 			// fmt.Printf("爬取 %s 域名结束", crawtask.HostName)
@@ -934,7 +972,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		t.EnablePluginsByDomain(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 
 		if EnalbeJackdaw {
-			t.RunCustomJS(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
+			t.RunCustomJS(URISList, &FileList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 		}
 
 		t.PluginWg.Wait()
@@ -1103,6 +1141,7 @@ func (t *Task) Init() {
 	t.Ctx = &Ctx
 	t.Cancel = &Cancel
 	t.lock = &sync.Mutex{}
+	t.jslock = &sync.Mutex{}
 	t.PliuginsMsg = make(chan map[string]interface{}, 1)
 	t.stoppluginmsg = make(chan struct{})
 	t.DoStartSignal = make(chan bool, 1)
