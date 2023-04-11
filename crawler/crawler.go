@@ -391,8 +391,9 @@ func (tab *Tab) ListenTarget(extends interface{}) {
 							jsdata, err := util.ParseJSFile(ev.Request.URL)
 							if err != nil {
 								logger.Error(err.Error())
+							} else {
+								tab.AddResultJsRequest(*jsdata)
 							}
-							tab.AddResultJsRequest(*jsdata)
 						}
 						a = fetch.ContinueRequest(ev.RequestID)
 					} else if util.GetScanDeepByUrl(ev.Request.URL) > int(tab.Scandeep) {
