@@ -304,10 +304,10 @@ func (spider *Spider) Init(TaskConfig config.TaskConfig) error {
 	Proxy, err := TaskConfig.GetValue("Proxy")
 	if err != nil {
 		logger.Error("%s", err.Error())
-	}
-
-	if Proxy.String() != "" {
-		options = append(options, chromedp.Flag("proxy-server", Proxy.String()))
+	} else {
+		if Proxy.String() != "" {
+			options = append(options, chromedp.Flag("proxy-server", Proxy.String()))
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*120)

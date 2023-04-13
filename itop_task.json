@@ -25,13 +25,13 @@
     },
     "exweb_target_info": [
         {
-            "scan_target": 0,
+            "scan_target": "",
             "target_id": 78,
             "target_order": 0,
             "task_id": 40
         },
         {
-            "scan_target": 0,
+            "scan_target": "",
             "target_id": 79,
             "target_order": 1,
             "task_id": 40
