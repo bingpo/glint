@@ -204,7 +204,7 @@ type TaskJsonConfig struct {
 }
 
 type Exweb_target_info struct {
-	Scan_target  json.Number `json:"scan_target"`
+	Scan_target  string      `json:"scan_target"`
 	Target_id    json.Number `json:"target_id"`
 	Target_order json.Number `json:"target_order"`
 	Task_id      json.Number `json:"task_id"`

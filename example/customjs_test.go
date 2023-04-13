@@ -30,6 +30,7 @@ func Test_customjs(t *testing.T) {
 		"data":   "o=sss",
 		"source": "Document",
 		"hostid": 0,
+		"taskid": 0,
 	})
 	if err != nil {
 		logger.Error("rpc error %s", err.Error())

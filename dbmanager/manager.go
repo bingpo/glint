@@ -255,7 +255,7 @@ func (Dm *DbManager) GetExtraHeaders(host_id int, task_id int) ([]ExtraHeaders, 
 	return values, err
 }
 
-// 保存漏扫结果
+// 保存web漏扫结果
 func (Dm *DbManager) SaveScanResult(
 	taskid int,
 	plugin_id string,
