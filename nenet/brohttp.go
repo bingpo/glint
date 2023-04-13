@@ -501,7 +501,7 @@ quit:
 
 	if t.stopSourceCh != nil {
 		close(t.stopSourceCh)
-		t.stopSourceCh = make(chan struct{})
+		//t.stopSourceCh = make(chan struct{})
 	}
 
 	Str := t.RequestsStr
