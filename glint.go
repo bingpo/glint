@@ -535,9 +535,11 @@ func (t *Task) RunCustomJS(
 		}
 	}()
 
+	//对于目标链接传递
 	for _, v := range originUrls {
 		if value, ok := v.(map[string]interface{}); ok {
 			value["isFile"] = false
+			value["taskid"] = t.TaskId
 			m, err := structpb.NewValue(value)
 			if err != nil {
 				logger.Error("client.RouteChat NewValue m failed: %v", err)
@@ -556,6 +558,8 @@ func (t *Task) RunCustomJS(
 			"Hash":        Files.FileInfo.Hash,
 			"FileContent": Files.FileInfo.Filecontent,
 			"isFile":      true,
+			"taskid":      t.TaskId,
+			"hostid":      Files.hostid,
 		})
 		data := pb.JsonRequest{Details: m.GetStructValue()}
 		if err := stream.Send(&data); err != nil {

@@ -247,8 +247,10 @@ func (t *Tabs) ListenTarget() {
 			go func(ev *network.EventLoadingFinished) {
 				c := chromedp.FromContext(*t.PackCtx)
 				ctx := cdp.WithExecutor(*t.PackCtx, c.Target)
-				array, _ := network.GetResponseBody(ev.RequestID).Do(ctx)
-
+				array, err := network.GetResponseBody(ev.RequestID).Do(ctx)
+				if err != nil {
+					return
+				}
 				select {
 				case <-t.stopSourceCh:
 					_, ok := <-t.Source
