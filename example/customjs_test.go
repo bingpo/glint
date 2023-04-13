@@ -7,6 +7,7 @@ import (
 	pb "glint/mesonrpc"
 	"io"
 	"log"
+	"sync"
 	"testing"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 )
 
 func Test_customjs(t *testing.T) {
+	var WG sync.WaitGroup //当前Tab页的等待同步计数
 	m, err := structpb.NewValue(map[string]interface{}{
 		"url":    "http://192.168.166.2/pikachu/vul/unserilization/unser.php",
 		"method": "POST",
@@ -65,20 +67,25 @@ func Test_customjs(t *testing.T) {
 	}
 
 	// fmt.Println(stream.Recv())
-	waitc := make(chan struct{})
+	//waitc := make(chan struct{})
 	go func() {
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
 				// read done.
-				close(waitc)
+				//close(waitc)
 				return
 			}
 			if err != nil {
 				log.Fatalf("client.RouteChat failed: %v", err)
 			}
 			log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
-			fmt.Println(in.GetReport().Fields["Name"].GetStringValue())
+
+			if _, ok := in.GetReport().Fields["vuln"]; ok {
+				// 存在漏洞信息
+			} else if _, ok := in.GetReport().Fields["state"]; ok {
+				WG.Done()
+			}
 		}
 	}()
 
@@ -86,7 +93,11 @@ func Test_customjs(t *testing.T) {
 	if err := stream.Send(&data); err != nil {
 		log.Fatalf("client.RouteChat: stream.Send(%v) failed: %v", data, err)
 	}
+	WG.Add(1)
 
 	stream.CloseSend()
-	<-waitc
+
+	WG.Wait()
+	fmt.Printf("finish!")
+	//<-waitc
 }

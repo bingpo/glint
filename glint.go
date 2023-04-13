@@ -500,7 +500,7 @@ func (t *Task) RunCustomJS(
 	const (
 		port = "50051"
 	)
-
+	var WG sync.WaitGroup //当前与jackdaw等待同步计数
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	address := "127.0.0.1:" + port
@@ -524,14 +524,17 @@ func (t *Task) RunCustomJS(
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
-				// read done.
-				close(waitc)
 				return
 			}
 			if err != nil {
 				logger.Error("client.RouteChat Recv failed: %v", err)
 			}
-			fmt.Println(in.GetReport().Fields["Name"].GetStringValue())
+			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
+			if _, ok := in.GetReport().Fields["vuln"]; ok {
+				// 存在漏洞信息
+			} else if _, ok := in.GetReport().Fields["state"]; ok {
+				WG.Done()
+			}
 		}
 	}()
 
@@ -544,6 +547,7 @@ func (t *Task) RunCustomJS(
 			if err != nil {
 				logger.Error("client.RouteChat NewValue m failed: %v", err)
 			}
+			WG.Add(1)
 			data := pb.JsonRequest{Details: m.GetStructValue()}
 			if err := stream.Send(&data); err != nil {
 				logger.Error("client.RouteChat JsonRequest failed: %v", err)
@@ -551,30 +555,29 @@ func (t *Task) RunCustomJS(
 		}
 	}
 
-	for _, Files := range *FileList {
-		m, _ := structpb.NewValue(map[string]interface{}{
-			"Uri":         Files.FileInfo.Uri,
-			"FileName":    Files.FileInfo.Filename,
-			"Hash":        Files.FileInfo.Hash,
-			"FileContent": Files.FileInfo.Filecontent,
-			"isFile":      true,
-			"taskid":      t.TaskId,
-			"hostid":      Files.hostid,
-		})
-		data := pb.JsonRequest{Details: m.GetStructValue()}
-		if err := stream.Send(&data); err != nil {
-			logger.Error("client.RouteChat JsonRequest failed: %v", err)
-		}
-	}
+	// for _, Files := range *FileList {
+	// 	m, _ := structpb.NewValue(map[string]interface{}{
+	// 		"Uri":         Files.FileInfo.Uri,
+	// 		"FileName":    Files.FileInfo.Filename,
+	// 		"Hash":        Files.FileInfo.Hash,
+	// 		"FileContent": Files.FileInfo.Filecontent,
+	// 		"isFile":      true,
+	// 		"taskid":      t.TaskId,
+	// 		"hostid":      Files.hostid,
+	// 	})
+	// 	data := pb.JsonRequest{Details: m.GetStructValue()}
+	// 	if err := stream.Send(&data); err != nil {
+	// 		logger.Error("client.RouteChat JsonRequest failed: %v", err)
+	// 	}
+	// }
 
 	select {
 	case <-waitc:
 		stream.CloseSend()
-		return
 	case <-ctx.Done():
 		stream.CloseSend()
-		return
 	}
+	WG.Wait()
 }
 
 // 只检测主域名
