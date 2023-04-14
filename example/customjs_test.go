@@ -72,8 +72,6 @@ func Test_customjs(t *testing.T) {
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
-				// read done.
-				//close(waitc)
 				return
 			}
 			if err != nil {
@@ -98,6 +96,6 @@ func Test_customjs(t *testing.T) {
 	stream.CloseSend()
 
 	WG.Wait()
-	fmt.Printf("finish!")
+	fmt.Printf("finish\n")
 	//<-waitc
 }
