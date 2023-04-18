@@ -261,8 +261,8 @@ func (t *Tabs) ListenTarget() {
 					return
 				case t.Source <- string(array):
 				case <-time.After(10 * time.Second):
+					t.SourceClosed = false
 				}
-
 			}(ev)
 
 		case *network.EventResponseReceived:
@@ -297,6 +297,7 @@ func (spider *Spider) Init(TaskConfig config.TaskConfig) error {
 		chromedp.Flag("blink-settings", "imagesEnabled=false"),
 		chromedp.UserAgent(`Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36`),
 	}
+
 	options = append(chromedp.DefaultExecAllocatorOptions[:], options...)
 
 	Proxy, err := TaskConfig.GetValue("Proxy")
@@ -426,6 +427,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 
 	}
 
+	t.Source = make(chan string, 1)
 	t.ListenTarget()
 
 	if t.IsEncodeUrl {
