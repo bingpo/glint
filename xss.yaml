@@ -36,11 +36,11 @@ xss:
         CheckTag: "key",
         CheckType: "Value",
       },
-      {
-        PayLoad: "1%22onmouseover=flag(95102)%22",
-        CheckTag: "key",
-        CheckType: "Value",
-      },
+      # {
+      #   PayLoad: "1%22onmouseover=flag(95102)%22",
+      #   CheckTag: "key",
+      #   CheckType: "Value",
+      # },
 
       {
         PayLoad: ";\"%3B1%2522onmouseover%3Dflag(95102)%2522\"",
