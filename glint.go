@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"glint/ast"
@@ -532,21 +533,38 @@ func (t *Task) RunCustomJS(
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
 
-				// // 存在漏洞信息,打印到漏洞信息
-				// Element := make(map[string]interface{}, 1)
-				// Element["status"] = 3
-				// Element["vul"] = p.PluginId
-				// Element["request"] = ReqMsg //base64.StdEncoding.EncodeToString([]byte())
-				// Element["response"] = Resp  //base64.StdEncoding.EncodeToString([]byte())
-				// Element["deail"] = vuln.Output
-				// Element["url"] = vuln.Target
-				// Element["vul_level"] = vuln.VulnerableLevel
-				// Element["result_id"] = Result_id
+				PluginId := in.GetReport().Fields["vuln"].GetStringValue()
+				__url := in.GetReport().Fields["url"].GetStringValue()
+				body := in.GetReport().Fields["body"].GetStringValue()
+				hostid := in.GetReport().Fields["hostid"].GetNumberValue()
 
-				// //通知socket消息
-				// //if IsSocket {
-				// t.PliuginsMsg <- Element
-				// //}
+				//保存数据库
+				Result_id, err := t.Dm.SaveScanResult(
+					t.TaskId,
+					PluginId,
+					true,
+					__url,
+					base64.StdEncoding.EncodeToString([]byte("")),
+					base64.StdEncoding.EncodeToString([]byte(body)),
+					int(hostid),
+				)
+				if err != nil {
+					logger.Error("plugin::error %s", err.Error())
+					return
+				}
+
+				// 存在漏洞信息,打印到漏洞信息
+				Element := make(map[string]interface{}, 1)
+				Element["status"] = 3
+				Element["vul"] = PluginId
+				Element["request"] = ""  //base64.StdEncoding.EncodeToString([]byte())
+				Element["response"] = "" //base64.StdEncoding.EncodeToString([]byte())
+				Element["deail"] = in.GetReport().Fields["payload"].GetStringValue()
+				Element["url"] = in.GetReport().Fields["url"].GetStringValue()
+				Element["vul_level"] = in.GetReport().Fields["level"].GetStringValue()
+				Element["result_id"] = Result_id
+				//通知socket消息
+				t.PliuginsMsg <- Element
 
 			} else if _, ok := in.GetReport().Fields["state"]; ok {
 				WG.Done()

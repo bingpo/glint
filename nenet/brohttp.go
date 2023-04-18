@@ -98,7 +98,6 @@ type Tabs struct {
 	Isreponse           bool
 	Source              chan string //当前爬虫的html的源码
 	stopSourceCh        chan struct{}
-	SourceClosed        bool
 	RespDone            chan bool
 	Reports             []ReportMsg
 	mu                  sync.Mutex //
@@ -254,15 +253,11 @@ func (t *Tabs) ListenTarget() {
 				}
 				select {
 				case <-t.stopSourceCh:
-					if !t.SourceClosed {
-						close(t.Source)
-						t.SourceClosed = true
-					}
 					return
 				case t.Source <- string(array):
 				case <-time.After(10 * time.Second):
-					t.SourceClosed = false
 				}
+
 			}(ev)
 
 		case *network.EventResponseReceived:
@@ -297,7 +292,6 @@ func (spider *Spider) Init(TaskConfig config.TaskConfig) error {
 		chromedp.Flag("blink-settings", "imagesEnabled=false"),
 		chromedp.UserAgent(`Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36`),
 	}
-
 	options = append(chromedp.DefaultExecAllocatorOptions[:], options...)
 
 	Proxy, err := TaskConfig.GetValue("Proxy")
@@ -427,7 +421,6 @@ func (t *Tabs) Send() ([]string, string, error) {
 
 	}
 
-	t.Source = make(chan string, 1)
 	t.ListenTarget()
 
 	if t.IsEncodeUrl {
