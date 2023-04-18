@@ -405,6 +405,9 @@ func (ts *TaskServer) start(v interface{}, IsGetDatabydatabase bool) (Task, erro
 		config.HttpsCertKey = PrivateKey
 	}
 
+	//websocket开启自定义js脚本通讯
+	EnalbeJackdaw = true
+
 	go task.dostartTasks(config)
 	// go func() {
 	// 	task.DoStartSignal <- true

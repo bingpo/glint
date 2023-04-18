@@ -518,6 +518,7 @@ func (t *Task) RunCustomJS(
 	stream, err := client.RouteChat(ctx)
 	if err != nil {
 		logger.Error("%s", err.Error())
+		return
 	}
 
 	waitc := make(chan struct{})
@@ -529,6 +530,7 @@ func (t *Task) RunCustomJS(
 			}
 			if err != nil {
 				logger.Error("client.RouteChat Recv failed: %v", err)
+				continue
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
@@ -549,7 +551,7 @@ func (t *Task) RunCustomJS(
 					int(hostid),
 				)
 				if err != nil {
-					logger.Error("plugin::error %s", err.Error())
+					logger.Error("customjs plugin::error %s", err.Error())
 					return
 				}
 
@@ -588,22 +590,6 @@ func (t *Task) RunCustomJS(
 			}
 		}
 	}
-
-	// for _, Files := range *FileList {
-	// 	m, _ := structpb.NewValue(map[string]interface{}{
-	// 		"Uri":         Files.FileInfo.Uri,
-	// 		"FileName":    Files.FileInfo.Filename,
-	// 		"Hash":        Files.FileInfo.Hash,
-	// 		"FileContent": Files.FileInfo.Filecontent,
-	// 		"isFile":      true,
-	// 		"taskid":      t.TaskId,
-	// 		"hostid":      Files.hostid,
-	// 	})
-	// 	data := pb.JsonRequest{Details: m.GetStructValue()}
-	// 	if err := stream.Send(&data); err != nil {
-	// 		logger.Error("client.RouteChat JsonRequest failed: %v", err)
-	// 	}
-	// }
 
 	select {
 	case <-waitc:
