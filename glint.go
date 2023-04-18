@@ -531,7 +531,23 @@ func (t *Task) RunCustomJS(
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
-				// 存在漏洞信息
+
+				// // 存在漏洞信息,打印到漏洞信息
+				// Element := make(map[string]interface{}, 1)
+				// Element["status"] = 3
+				// Element["vul"] = p.PluginId
+				// Element["request"] = ReqMsg //base64.StdEncoding.EncodeToString([]byte())
+				// Element["response"] = Resp  //base64.StdEncoding.EncodeToString([]byte())
+				// Element["deail"] = vuln.Output
+				// Element["url"] = vuln.Target
+				// Element["vul_level"] = vuln.VulnerableLevel
+				// Element["result_id"] = Result_id
+
+				// //通知socket消息
+				// //if IsSocket {
+				// t.PliuginsMsg <- Element
+				// //}
+
 			} else if _, ok := in.GetReport().Fields["state"]; ok {
 				WG.Done()
 			}
@@ -1019,6 +1035,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 			logger.Error(err.Error())
 			return err
 		}
+
 		listener, err := net.Listen("tcp", "127.0.0.1:30986")
 		if err != nil {
 			logger.Error(err.Error())
@@ -1088,6 +1105,7 @@ func (t *Task) agentPluginRun(args *proxy.PassiveProxy) {
 	if args != nil {
 		go func() {
 			for {
+
 				UrlElement := <-args.CommunicationSingleton
 
 				if value, ok := UrlElement["IsPauseScan"].(bool); ok {

@@ -318,15 +318,6 @@ func (p *Plugin) Run(args PluginOption) error {
 						Resp = vuln.RespMsg[0]
 					}
 
-					// if PluginId == string(SQL) {
-					// 	logger.Success("发现SQL注入漏洞,正在插入")
-					// 	logger.Success("vuln.Vulnerable: %v", vuln.Vulnerable)
-					// 	logger.Success("vuln.Target: %v", vuln.Target)
-					// 	logger.Success("ReqMsg: %v", base64.StdEncoding.EncodeToString([]byte(ReqMsg)))
-					// 	logger.Success("Resp: %v", base64.StdEncoding.EncodeToString([]byte(Resp)))
-					// 	logger.Success("Hostid: %v", vuln.Hostid)
-					// }
-
 					Result_id, err = p.Dm.SaveScanResult(
 						p.Taskid,
 						PluginId,

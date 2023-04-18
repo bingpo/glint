@@ -63,7 +63,7 @@ func (P *LastJob) Init(args PluginParam) {
 	util.Setup()
 	sess := nenet.GetSessionByOptions(
 		&nenet.ReqOptions{
-			Timeout:       5 * time.Second,
+			Timeout:       15 * time.Second,
 			AllowRedirect: true,
 			Proxy:         args.UpProxy,
 			Cert:          args.Cert,

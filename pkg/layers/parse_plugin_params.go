@@ -104,10 +104,11 @@ func (p *PluginParam) ParsePluginParams(group *plugin.GroupData, ct CheckType) {
 	p.CertKey = group.HttpsCertKey
 	if !group.Config.JsonOrYaml {
 		p.UpProxy = group.Config.Json.Exweb_scan_param.Http_proxy
-		p.Timeout, _ = group.Config.Json.Exweb_scan_param.Http_response_timeout.Int64()
+		//p.Timeout, _ = group.Config.Json.Exweb_scan_param.Http_response_timeout.Int64()
+		p.Timeout = 15
 	} else {
 		p.UpProxy = group.Config.Yaml.Proxy
-		p.Timeout = 5
+		p.Timeout = 15
 	}
 
 	RMaxRedirectTimes, err := p.TaskConfig.GetValue("Max_redirect_times")

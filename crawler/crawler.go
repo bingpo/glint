@@ -688,7 +688,6 @@ func (tab *Tab) HandleBindingCalled(event *runtime.EventBindingCalled) {
 			// tab.AddResultRequest(req)
 			tab.AddResultUrl(config.GET, bcPayload.Args[0], bcPayload.Args[1])
 		}
-
 	}
 	if bcPayload.Name == "Test" {
 		fmt.Println(bcPayload.Args)

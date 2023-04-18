@@ -147,7 +147,7 @@ func (sess *Session) doRequest(verb string, url string, headers map[string]strin
 	} else if retry == -1 {
 		retry = 0
 	}
-
+	//sess.ReqOptions.Timeout
 	// for i := 0; i <= int(sess.RetryTimes); i++ {
 	if sess.AllowRedirect {
 		err = sess.client.DoRedirects(req, resp, int(sess.RetryTimes))

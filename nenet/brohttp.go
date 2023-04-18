@@ -98,6 +98,7 @@ type Tabs struct {
 	Isreponse           bool
 	Source              chan string //当前爬虫的html的源码
 	stopSourceCh        chan struct{}
+	SourceClosed        bool
 	RespDone            chan bool
 	Reports             []ReportMsg
 	mu                  sync.Mutex //
@@ -253,12 +254,9 @@ func (t *Tabs) ListenTarget() {
 				}
 				select {
 				case <-t.stopSourceCh:
-					_, ok := <-t.Source
-					if !ok {
-						//fmt.Println("channel is closed")
-						return
-					} else {
+					if !t.SourceClosed {
 						close(t.Source)
+						t.SourceClosed = true
 					}
 					return
 				case t.Source <- string(array):
@@ -501,7 +499,7 @@ quit:
 
 	if t.stopSourceCh != nil {
 		close(t.stopSourceCh)
-		//t.stopSourceCh = make(chan struct{})
+		t.stopSourceCh = make(chan struct{})
 	}
 
 	Str := t.RequestsStr
