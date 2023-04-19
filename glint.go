@@ -530,6 +530,7 @@ func (t *Task) RunCustomJS(
 			}
 			if err != nil {
 				logger.Error("client.RouteChat Recv failed: %v", err)
+				WG.Done()
 				continue
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
@@ -590,6 +591,7 @@ func (t *Task) RunCustomJS(
 			}
 		}
 	}
+
 	WG.Wait()
 }
 
