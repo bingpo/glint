@@ -854,6 +854,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 	URLSList := make(map[string]interface{}, 0)
 	ALLURI := make(map[string][]interface{}, 0)
 	URISList := make(map[string]interface{}, 0)
+	Jsonjs := make(map[string]interface{}, 0)
 	JSONALLURLS := make(map[string][]ast.JsonUrl, 0)
 	FileList := []crawSiteList{}
 
@@ -996,8 +997,9 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		t.EnablePluginsByUri(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 		t.EnablePluginsByDomain(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 
+		Jsonjs = util.CopyMap(URISList)
 		if EnalbeJackdaw {
-			t.RunCustomJS(URISList, &FileList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
+			t.RunCustomJS(Jsonjs, &FileList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 		}
 
 		t.PluginWg.Wait()
