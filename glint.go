@@ -521,7 +521,7 @@ func (t *Task) RunCustomJS(
 		return
 	}
 
-	waitc := make(chan struct{})
+	//waitc := make(chan struct{})
 	go func() {
 		for {
 			in, err := stream.Recv()
@@ -589,13 +589,6 @@ func (t *Task) RunCustomJS(
 				logger.Error("client.RouteChat JsonRequest failed: %v", err)
 			}
 		}
-	}
-
-	select {
-	case <-waitc:
-		stream.CloseSend()
-	case <-ctx.Done():
-		stream.CloseSend()
 	}
 	WG.Wait()
 }
