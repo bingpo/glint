@@ -230,19 +230,19 @@ func (t *tabTask) Task() {
 	tab.Crawler(nil)
 
 	// 收集结果
-	t.crawlerTask.Result.resultLock.Lock()
+	//t.crawlerTask.Result.resultLock.Lock()
+	//defer t.crawlerTask.Result.resultLock.Unlock()
 	t.crawlerTask.Result.AllReqList = append(t.crawlerTask.Result.AllReqList, tab.ResultList...)
 	*t.crawledCount -= 1
 	logger.Info("当前爬虫完成,剩余爬虫数:%d", (*t.crawledCount))
-	t.crawlerTask.Result.resultLock.Unlock()
 
 	for _, req := range tab.ResultList {
 		logger.Debug("Filter Request:%s", req.URL.String())
 		if t.crawlerTask.Config.FilterMode == SimpleFilterMode {
 			if !t.crawlerTask.smartFilter.SimpleFilter.DoFilter(req) {
-				t.crawlerTask.Result.resultLock.Lock()
+				//t.crawlerTask.Result.resultLock.Lock()
 				t.crawlerTask.Result.ReqList = append(t.crawlerTask.Result.ReqList, req)
-				t.crawlerTask.Result.resultLock.Unlock()
+				//t.crawlerTask.Result.resultLock.Unlock()
 				if !FilterKey(req.URL.String(), t.crawlerTask.Config.IgnoreKeywords) {
 					t.crawlerTask.addTask2Pool(req)
 					//这里通知进度条
@@ -253,9 +253,9 @@ func (t *tabTask) Task() {
 			}
 		} else {
 			if !t.crawlerTask.smartFilter.DoFilter(req) {
-				t.crawlerTask.Result.resultLock.Lock()
+				//t.crawlerTask.Result.resultLock.Lock()
 				t.crawlerTask.Result.ReqList = append(t.crawlerTask.Result.ReqList, req)
-				t.crawlerTask.Result.resultLock.Unlock()
+				//t.crawlerTask.Result.resultLock.Unlock()
 				if !FilterKey(req.URL.String(), t.crawlerTask.Config.IgnoreKeywords) {
 					t.crawlerTask.addTask2Pool(req)
 				}
