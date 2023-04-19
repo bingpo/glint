@@ -106,6 +106,12 @@ func Test_customjs_2(t *testing.T) {
 		port = "50051"
 	)
 
+	/*
+		URLSList  map[string][]interface{}
+				craw_test.json
+
+	*/
+
 	originUrls := make(map[string]interface{})
 
 	a := map[string]interface{}{
@@ -125,7 +131,9 @@ func Test_customjs_2(t *testing.T) {
 		"taskid": 0,
 	}
 
-	originUrls["sss"] = a
+	a_list := []interface{}{}
+	a_list = append(a_list, a)
+	originUrls["sss"] = a_list
 
 	var WG sync.WaitGroup //当前与jackdaw等待同步计数
 	var opts []grpc.DialOption
@@ -155,8 +163,8 @@ func Test_customjs_2(t *testing.T) {
 				return
 			}
 			if err != nil {
-				logger.Error("client.RouteChat Recv failed: %v", err)
-				continue
+				//logger.Error("client.RouteChat Recv failed: %v", err)
+				return
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
@@ -199,18 +207,23 @@ func Test_customjs_2(t *testing.T) {
 
 	//对于目标链接传递
 	for _, v := range originUrls {
-		if value, ok := v.(map[string]interface{}); ok {
-			value["isFile"] = false
-			value["taskid"] = 1
-			m, err := structpb.NewValue(value)
-			if err != nil {
-				logger.Error("client.RouteChat NewValue m failed: %v", err)
+		if value_list, ok := v.([]interface{}); ok {
+			for _, v := range value_list {
+				if value, ok := v.(map[string]interface{}); ok {
+					value["isFile"] = false
+					value["taskid"] = 1
+					m, err := structpb.NewValue(value)
+					if err != nil {
+						logger.Error("client.RouteChat NewValue m failed: %v", err)
+					}
+					WG.Add(1)
+					data := pb.JsonRequest{Details: m.GetStructValue()}
+					if err := stream.Send(&data); err != nil {
+						logger.Error("client.RouteChat JsonRequest failed: %v", err)
+					}
+				}
 			}
-			WG.Add(1)
-			data := pb.JsonRequest{Details: m.GetStructValue()}
-			if err := stream.Send(&data); err != nil {
-				logger.Error("client.RouteChat JsonRequest failed: %v", err)
-			}
+
 		}
 	}
 	WG.Wait()

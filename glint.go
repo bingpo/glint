@@ -529,9 +529,8 @@ func (t *Task) RunCustomJS(
 				return
 			}
 			if err != nil {
-				logger.Error("client.RouteChat Recv failed: %v", err)
-				WG.Done()
-				continue
+				//logger.Error("client.RouteChat Recv failed: %v", err)
+				return
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
@@ -577,17 +576,21 @@ func (t *Task) RunCustomJS(
 
 	//对于目标链接传递
 	for _, v := range originUrls {
-		if value, ok := v.(map[string]interface{}); ok {
-			value["isFile"] = false
-			value["taskid"] = t.TaskId
-			m, err := structpb.NewValue(value)
-			if err != nil {
-				logger.Error("client.RouteChat NewValue m failed: %v", err)
-			}
-			WG.Add(1)
-			data := pb.JsonRequest{Details: m.GetStructValue()}
-			if err := stream.Send(&data); err != nil {
-				logger.Error("client.RouteChat JsonRequest failed: %v", err)
+		if value_list, ok := v.([]interface{}); ok {
+			for _, v := range value_list {
+				if value, ok := v.(map[string]interface{}); ok {
+					value["isFile"] = false
+					value["taskid"] = 1
+					m, err := structpb.NewValue(value)
+					if err != nil {
+						logger.Error("client.RouteChat NewValue m failed: %v", err)
+					}
+					WG.Add(1)
+					data := pb.JsonRequest{Details: m.GetStructValue()}
+					if err := stream.Send(&data); err != nil {
+						logger.Error("client.RouteChat JsonRequest failed: %v", err)
+					}
+				}
 			}
 		}
 	}
