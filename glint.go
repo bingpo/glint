@@ -521,15 +521,16 @@ func (t *Task) RunCustomJS(
 		return
 	}
 
-	//waitc := make(chan struct{})
+	waitc := make(chan struct{})
 	go func() {
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
+				close(waitc)
 				return
 			}
 			if err != nil {
-				//logger.Error("client.RouteChat Recv failed: %v", err)
+				close(waitc)
 				return
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
@@ -574,6 +575,17 @@ func (t *Task) RunCustomJS(
 		}
 	}()
 
+	var length = 0
+	//对于目标链接传递
+	for _, v := range originUrls {
+		if value_list, ok := v.([]interface{}); ok {
+			for _, v := range value_list {
+				logger.Debug("%v", v)
+				length++
+			}
+		}
+	}
+
 	//对于目标链接传递
 	for _, v := range originUrls {
 		if value_list, ok := v.([]interface{}); ok {
@@ -581,6 +593,7 @@ func (t *Task) RunCustomJS(
 				if value, ok := v.(map[string]interface{}); ok {
 					value["isFile"] = false
 					value["taskid"] = 1
+					value["targetLength"] = length
 					m, err := structpb.NewValue(value)
 					if err != nil {
 						logger.Error("client.RouteChat NewValue m failed: %v", err)
@@ -594,7 +607,7 @@ func (t *Task) RunCustomJS(
 			}
 		}
 	}
-
+	<-waitc
 	//WG.Wait()
 }
 

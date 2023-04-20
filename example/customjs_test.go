@@ -7,9 +7,7 @@ import (
 	"glint/logger"
 	pb "glint/mesonrpc"
 	"io"
-	"log"
 	"os"
-	"sync"
 	"testing"
 	"time"
 
@@ -18,100 +16,10 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func Test_customjs(t *testing.T) {
-	var WG sync.WaitGroup //当前Tab页的等待同步计数
-	m, err := structpb.NewValue(map[string]interface{}{
-		"url":    "http://192.168.166.2/pikachu/vul/unserilization/unser.php",
-		"method": "POST",
-		"headers": map[string]interface{}{
-			"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-			"Cookie":                    "PHPSESSID=ofl9dchd22r5s46qa8cs0bcanp",
-			"Referer":                   "http://192.168.166.2/pikachu/",
-			"Content-Type":              "application/x-www-form-urlencoded",
-			"Upgrade-Insecure-Requests": "1",
-			"User-Agent":                "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
-		},
-		"data":   "o=sss",
-		"source": "Document",
-		"hostid": 0,
-		"taskid": 0,
-	})
-	if err != nil {
-		logger.Error("rpc error %s", err.Error())
-	}
-	fmt.Println(m.String())
-
-	const (
-		port = "50051"
-	)
-
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	// lis, err := net.Listen("tcp", "127.0.0.1:"+port)
-	// if err != nil {
-	// 	log.Fatalf("failed to listen: %v", err)
-	// }
-
-	address := "127.0.0.1:" + port
-	conn, err := grpc.Dial(address, opts...)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-
-	defer conn.Close()
-	client := pb.NewRouteGuideClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Second)
-	defer cancel()
-
-	stream, err := client.RouteChat(ctx)
-	if err != nil {
-		logger.Error("%s", err.Error())
-	}
-
-	// fmt.Println(stream.Recv())
-	//waitc := make(chan struct{})
-	go func() {
-		for {
-			in, err := stream.Recv()
-			if err == io.EOF {
-				return
-			}
-			if err != nil {
-				log.Fatalf("client.RouteChat failed: %v", err)
-			}
-			log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
-
-			if _, ok := in.GetReport().Fields["vuln"]; ok {
-				// 存在漏洞信息
-			} else if _, ok := in.GetReport().Fields["state"]; ok {
-				WG.Done()
-			}
-		}
-	}()
-
-	data := pb.JsonRequest{Details: m.GetStructValue()}
-	if err := stream.Send(&data); err != nil {
-		log.Fatalf("client.RouteChat: stream.Send(%v) failed: %v", data, err)
-	}
-	WG.Add(1)
-
-	stream.CloseSend()
-
-	WG.Wait()
-	fmt.Printf("finish\n")
-	//<-waitc
-}
-
 func Test_customjs_2(t *testing.T) {
 	const (
 		port = "50051"
 	)
-
-	/*
-		URLSList  map[string][]interface{}
-				craw_test.json
-
-	*/
 
 	file, err := os.Open("../originUrls.json")
 	if err != nil {
@@ -126,7 +34,7 @@ func Test_customjs_2(t *testing.T) {
 		panic(err)
 	}
 
-	var WG sync.WaitGroup //当前与jackdaw等待同步计数
+	//var WG sync.WaitGroup //当前与jackdaw等待同步计数
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	address := "127.0.0.1:" + port
@@ -145,7 +53,6 @@ func Test_customjs_2(t *testing.T) {
 		logger.Error("%s", err.Error())
 		return
 	}
-
 	waitc := make(chan struct{})
 	go func() {
 		for {
@@ -155,11 +62,12 @@ func Test_customjs_2(t *testing.T) {
 				return
 			}
 			if err != nil {
-				//logger.Error("client.RouteChat Recv failed: %v", err)
+				close(waitc)
 				return
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
+				logger.Success("发现漏洞!")
 				PluginId := in.GetReport().Fields["vuln"].GetStringValue()
 				__url := in.GetReport().Fields["url"].GetStringValue()
 				body := in.GetReport().Fields["body"].GetStringValue()
@@ -192,10 +100,21 @@ func Test_customjs_2(t *testing.T) {
 				//t.PliuginsMsg <- Element
 
 			} else if _, ok := in.GetReport().Fields["state"]; ok {
-				//WG.Done()
+				// WG.Done()
 			}
 		}
 	}()
+
+	var length = 0
+	//对于目标链接传递
+	for _, v := range originUrls {
+		if value_list, ok := v.([]interface{}); ok {
+			for _, v := range value_list {
+				logger.Debug("%v", v)
+				length++
+			}
+		}
+	}
 
 	//对于目标链接传递
 	for _, v := range originUrls {
@@ -204,21 +123,23 @@ func Test_customjs_2(t *testing.T) {
 				if value, ok := v.(map[string]interface{}); ok {
 					value["isFile"] = false
 					value["taskid"] = 1
+					value["targetLength"] = length
 					m, err := structpb.NewValue(value)
 					if err != nil {
 						logger.Error("client.RouteChat NewValue m failed: %v", err)
 					}
-					WG.Add(1)
+					//WG.Add(1)
 					data := pb.JsonRequest{Details: m.GetStructValue()}
 					if err := stream.Send(&data); err != nil {
 						logger.Error("client.RouteChat JsonRequest failed: %v", err)
 					}
 				}
 			}
-
 		}
 	}
 	<-waitc
+	stream.CloseSend()
+	//WG.Wait()
 	fmt.Println("finish")
 
 }
