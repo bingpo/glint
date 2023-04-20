@@ -2,11 +2,13 @@ package mydemo
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"glint/logger"
 	pb "glint/mesonrpc"
 	"io"
 	"log"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -101,7 +103,6 @@ func Test_customjs(t *testing.T) {
 }
 
 func Test_customjs_2(t *testing.T) {
-
 	const (
 		port = "50051"
 	)
@@ -112,28 +113,18 @@ func Test_customjs_2(t *testing.T) {
 
 	*/
 
-	originUrls := make(map[string]interface{})
-
-	a := map[string]interface{}{
-		"url":    "http://192.168.166.2/pikachu/vul/unserilization/unser.php",
-		"method": "POST",
-		"headers": map[string]interface{}{
-			"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-			"Cookie":                    "PHPSESSID=ofl9dchd22r5s46qa8cs0bcanp",
-			"Referer":                   "http://192.168.166.2/pikachu/",
-			"Content-Type":              "application/x-www-form-urlencoded",
-			"Upgrade-Insecure-Requests": "1",
-			"User-Agent":                "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
-		},
-		"data":   "o=sss",
-		"source": "Document",
-		"hostid": 0,
-		"taskid": 0,
+	file, err := os.Open("../originUrls.json")
+	if err != nil {
+		panic(err)
 	}
+	defer file.Close()
 
-	a_list := []interface{}{}
-	a_list = append(a_list, a)
-	originUrls["sss"] = a_list
+	// 读取JSON数据
+	decoder := json.NewDecoder(file)
+	originUrls := make(map[string]interface{})
+	if err := decoder.Decode(&originUrls); err != nil {
+		panic(err)
+	}
 
 	var WG sync.WaitGroup //当前与jackdaw等待同步计数
 	var opts []grpc.DialOption
@@ -155,11 +146,12 @@ func Test_customjs_2(t *testing.T) {
 		return
 	}
 
-	// waitc := make(chan struct{})
+	waitc := make(chan struct{})
 	go func() {
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
+				close(waitc)
 				return
 			}
 			if err != nil {
@@ -200,7 +192,7 @@ func Test_customjs_2(t *testing.T) {
 				//t.PliuginsMsg <- Element
 
 			} else if _, ok := in.GetReport().Fields["state"]; ok {
-				WG.Done()
+				//WG.Done()
 			}
 		}
 	}()
@@ -226,13 +218,7 @@ func Test_customjs_2(t *testing.T) {
 
 		}
 	}
-	WG.Wait()
+	<-waitc
 	fmt.Println("finish")
-	// select {
-	// case <-waitc:
-	// 	stream.CloseSend()
-	// case <-ctx.Done():
-	// 	stream.CloseSend()
-	// }
 
 }

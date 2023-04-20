@@ -2,7 +2,6 @@ package crawler
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -426,15 +425,15 @@ func (tab *Tab) ListenTarget(extends interface{}) {
 				req.PostData = ev.Request.PostData
 				// file
 
-				filename, err := util.GetFileNameFromUrl(ev.Request.URL)
-				if err != nil {
-					req.PageState.IsFile = false
-				} else {
-					req.PageState.Filename = filename
-					req.PageState.IsFile = true
-					req.PageState.ScanSiteFile = true
-					req.PageState.FileContent = base64.StdEncoding.EncodeToString([]byte(ev.Request.PostData))
-				}
+				// filename, err := util.GetFileNameFromUrl(ev.Request.URL)
+				// if err != nil {
+				// 	req.PageState.IsFile = false
+				// } else {
+				// 	req.PageState.Filename = filename
+				// 	req.PageState.IsFile = true
+				// 	req.PageState.ScanSiteFile = true
+				// 	req.PageState.FileContent = base64.StdEncoding.EncodeToString([]byte(ev.Request.PostData))
+				// }
 
 				if len(ev.Request.Headers) > 0 {
 					req.Headers = ev.Request.Headers
@@ -1133,14 +1132,14 @@ func (tab *Tab) AddResultUrl(method string, _url string, source string) {
 	req.Source = source
 	req.GroupsId = "CollectLink"
 
-	filename, err := util.GetFileNameFromUrl(req.URL.String())
-	if err != nil {
-		req.PageState.IsFile = false
-	} else {
-		req.PageState.Filename = filename
-		req.PageState.IsFile = true
-		// req.PageState.ScanSiteFile = true
-	}
+	// filename, err := util.GetFileNameFromUrl(req.URL.String())
+	// if err != nil {
+	// 	req.PageState.IsFile = false
+	// } else {
+	// 	req.PageState.Filename = filename
+	// 	req.PageState.IsFile = true
+	// 	// req.PageState.ScanSiteFile = true
+	// }
 
 	tab.lock.Lock()
 	tab.ResultList = append(tab.ResultList, &req)
