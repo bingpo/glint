@@ -501,7 +501,7 @@ func (t *Task) RunCustomJS(
 	const (
 		port = "50051"
 	)
-	var WG sync.WaitGroup //当前与jackdaw等待同步计数
+	//var WG sync.WaitGroup //当前与jackdaw等待同步计数
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	address := "127.0.0.1:" + port
@@ -569,7 +569,7 @@ func (t *Task) RunCustomJS(
 				t.PliuginsMsg <- Element
 
 			} else if _, ok := in.GetReport().Fields["state"]; ok {
-				WG.Done()
+				//WG.Done()
 			}
 		}
 	}()
@@ -595,7 +595,7 @@ func (t *Task) RunCustomJS(
 		}
 	}
 
-	WG.Wait()
+	//WG.Wait()
 }
 
 // 只检测主域名
