@@ -585,7 +585,7 @@ func (t *Task) RunCustomJS(
 					if err != nil {
 						logger.Error("client.RouteChat NewValue m failed: %v", err)
 					}
-					WG.Add(1)
+					//WG.Add(1)
 					data := pb.JsonRequest{Details: m.GetStructValue()}
 					if err := stream.Send(&data); err != nil {
 						logger.Error("client.RouteChat JsonRequest failed: %v", err)
@@ -733,7 +733,7 @@ func (t *Task) CrawlerConvertToMap(
 					element["data"] = r.PostData
 					element["source"] = r.Source
 					element["hostid"] = result.Hostid
-					element["pagestate"] = r.PageState
+					//element["pagestate"] = r.PageState
 					if DATA1 != nil {
 						(*DATA1)[r.GroupsId] = append((*DATA1)[r.GroupsId], element)
 					}
@@ -758,7 +758,7 @@ func (t *Task) CrawlerConvertToMap(
 				element["data"] = r.PostData
 				element["source"] = r.Source
 				element["hostid"] = result.Hostid
-				element["pagestate"] = r.PageState
+				//element["pagestate"] = r.PageState
 				if DATA1 != nil {
 					(*DATA1)[r.GroupsId] = append((*DATA1)[r.GroupsId], element)
 				}
