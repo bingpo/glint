@@ -512,8 +512,8 @@ func (t *Task) RunCustomJS(
 
 	defer conn.Close()
 	client := pb.NewRouteGuideClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
-	defer cancel()
+	ctx := context.Background()
+	//defer cancel()
 
 	stream, err := client.RouteChat(ctx)
 	if err != nil {
@@ -531,47 +531,51 @@ func (t *Task) RunCustomJS(
 			}
 			if err != nil {
 				close(waitc)
+				logger.Error("routeChat error %s", err.Error())
 				return
 			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
-			if _, ok := in.GetReport().Fields["vuln"]; ok {
+			if in != nil {
+				if _, ok := in.GetReport().Fields["vuln"]; ok {
 
-				PluginId := in.GetReport().Fields["vuln"].GetStringValue()
-				__url := in.GetReport().Fields["url"].GetStringValue()
-				body := in.GetReport().Fields["body"].GetStringValue()
-				hostid := in.GetReport().Fields["hostid"].GetNumberValue()
+					PluginId := in.GetReport().Fields["vuln"].GetStringValue()
+					__url := in.GetReport().Fields["url"].GetStringValue()
+					//_ := in.GetReport().Fields["body"].GetStringValue()
+					hostid := in.GetReport().Fields["hostid"].GetNumberValue()
 
-				//保存数据库
-				Result_id, err := t.Dm.SaveScanResult(
-					t.TaskId,
-					PluginId,
-					true,
-					__url,
-					base64.StdEncoding.EncodeToString([]byte("")),
-					base64.StdEncoding.EncodeToString([]byte(body)),
-					int(hostid),
-				)
-				if err != nil {
-					logger.Error("customjs plugin::error %s", err.Error())
-					return
+					//保存数据库
+					_, err := t.Dm.SaveScanResult(
+						t.TaskId,
+						PluginId,
+						true,
+						__url,
+						base64.StdEncoding.EncodeToString([]byte("emtry")),
+						base64.StdEncoding.EncodeToString([]byte("test")),
+						int(hostid),
+					)
+					if err != nil {
+						logger.Error("customjs plugin::error %s", err.Error())
+						return
+					}
+
+					// // 存在漏洞信息,打印到漏洞信息
+					// Element := make(map[string]interface{}, 1)
+					// Element["status"] = 3
+					// Element["vul"] = PluginId
+					// Element["request"] = ""  //base64.StdEncoding.EncodeToString([]byte())
+					// Element["response"] = "" //base64.StdEncoding.EncodeToString([]byte())
+					// Element["deail"] = in.GetReport().Fields["payload"].GetStringValue()
+					// Element["url"] = in.GetReport().Fields["url"].GetStringValue()
+					// Element["vul_level"] = in.GetReport().Fields["level"].GetStringValue()
+					// Element["result_id"] = Result_id
+					// //通知socket消息
+					// t.PliuginsMsg <- Element
+
+				} else if _, ok := in.GetReport().Fields["state"]; ok {
+					//WG.Done()
 				}
-
-				// 存在漏洞信息,打印到漏洞信息
-				Element := make(map[string]interface{}, 1)
-				Element["status"] = 3
-				Element["vul"] = PluginId
-				Element["request"] = ""  //base64.StdEncoding.EncodeToString([]byte())
-				Element["response"] = "" //base64.StdEncoding.EncodeToString([]byte())
-				Element["deail"] = in.GetReport().Fields["payload"].GetStringValue()
-				Element["url"] = in.GetReport().Fields["url"].GetStringValue()
-				Element["vul_level"] = in.GetReport().Fields["level"].GetStringValue()
-				Element["result_id"] = Result_id
-				//通知socket消息
-				t.PliuginsMsg <- Element
-
-			} else if _, ok := in.GetReport().Fields["state"]; ok {
-				//WG.Done()
 			}
+
 		}
 	}()
 
@@ -608,6 +612,7 @@ func (t *Task) RunCustomJS(
 		}
 	}
 	<-waitc
+	logger.Debug("pass")
 	//WG.Wait()
 }
 

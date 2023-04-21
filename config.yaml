@@ -1,9 +1,9 @@
 MaxCrawlCount: 100
 
 
-DBUser: "newitop"
+DBUser: "itop"
 DBName: "itop"
-DBPassWord: "rjjsoft+0591"
+DBPassWord: "rjjsoft"
 
 FilterMode: "strict"
 TabRunTimeout: 20
