@@ -673,7 +673,7 @@ func (t *Task) AddPlugins(
 	pluginInternal := plugin.Plugin{
 		PluginName:   PluginName,
 		PluginId:     PluginId,
-		MaxPoolCount: 10,
+		MaxPoolCount: 3,
 		Callbacks:    myfunc,
 		InstallDB:    installDb,
 		Spider:       Payloadcarrier,
@@ -957,6 +957,16 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 			logger.Info(fmt.Sprintf("Task finished, %d results, %d requests, %d subdomains, %d domains found.",
 				len(result.ReqList), len(result.AllReqList), len(result.SubDomainList), len(result.AllDomainList)))
 			craw_cleanup(crawtask)
+		}
+
+		select {
+		case <-(*t.Ctx).Done():
+			err = errors.New("task has end")
+			Taskslock.Lock()
+			removetasks(t.TaskId)
+			Taskslock.Unlock()
+			return err
+		default:
 		}
 
 		t.setprog(percentage)

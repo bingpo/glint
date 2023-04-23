@@ -47,8 +47,8 @@ func (r *Rate) InitRate(QPS uint) {
 }
 
 func (r *Rate) LimitWait() {
-	// r.lock.RLock()
-	// defer r.lock.RUnlock()
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	r.Limiter.Wait(context.Background())
 
 }

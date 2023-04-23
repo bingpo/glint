@@ -394,7 +394,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 	var tcancel context.CancelFunc
 	var rawUrl string
 	//var btimeout bool
-	//t.Ratelimite.LimitWait()
+	t.Ratelimite.LimitWait()
 	t.stopSourceCh = make(chan struct{})
 	// time.Sleep(5)
 	ctx, cancel := t.newSpiderTab()
