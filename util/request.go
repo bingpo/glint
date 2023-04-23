@@ -50,7 +50,6 @@ func (r *Rate) LimitWait() {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	r.Limiter.Wait(context.Background())
-
 }
 
 // func (r *Rate) GetTokens() float64 {
