@@ -23,6 +23,7 @@ import (
 	"net/textproto"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -1214,4 +1215,13 @@ func ParseJSFile(url string) (*SiteFile, error) {
 	}
 
 	return fileType, nil
+}
+
+func KillChrome() error {
+	cmd := exec.Command("killall", "chrome")
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -270,9 +270,9 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 			netcomm.Sendmsg(-1, err.Error(), task.TaskId)
 			return err
 		}
-		// Taskslock.Lock()
+		Taskslock.Lock()
 		Tasks = append(Tasks, &task)
-		// Taskslock.Unlock()
+		Taskslock.Unlock()
 		netcomm.Sendmsg(0, "The Task is Starting", task.TaskId)
 		go task.PluginMsgHandler(*task.Ctx)
 		// go task.quitmsg()
@@ -286,6 +286,12 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 					Taskslock.Unlock()
 					(*task.Cancel)()
 					Tasks = append(Tasks[:i], Tasks[i+1:]...)
+				}
+			}
+			if len(Tasks) == 0 {
+				err := util.KillChrome() //
+				if err != nil {
+					logger.Error("killChrome fail error : ", err)
 				}
 			}
 			// Tasks = nil
