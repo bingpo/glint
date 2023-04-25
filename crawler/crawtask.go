@@ -11,6 +11,7 @@ import (
 	"glint/util"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/panjf2000/ants/v2"
 )
@@ -246,9 +247,14 @@ func (t *tabTask) Task() {
 				if !FilterKey(req.URL.String(), t.crawlerTask.Config.IgnoreKeywords) {
 					t.crawlerTask.addTask2Pool(req)
 					//这里通知进度条
-					Element := make(map[string]interface{})
+					Element := make(map[string]interface{}, 1)
+					// Element := make(map[string]interface{})
 					Element["status"] = 4
 					Element["CrawUrl"] = req.URL.String()
+					select {
+					case (*t.SocketMsg) <- Element:
+					case <-time.After(time.Second * 5):
+					}
 				}
 			}
 		} else {
