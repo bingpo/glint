@@ -246,7 +246,7 @@ func (t *tabTask) Task() {
 				if !FilterKey(req.URL.String(), t.crawlerTask.Config.IgnoreKeywords) {
 					t.crawlerTask.addTask2Pool(req)
 					//这里通知进度条
-					util.SendToSocket(t.SocketMsg, 4, req.URL.String())
+					util.SendToSocket(t.SocketMsg, 4, "crawler", req.URL.String())
 				}
 			}
 		} else {
