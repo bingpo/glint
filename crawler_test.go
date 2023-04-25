@@ -57,7 +57,8 @@ func Test_Crawler(t *testing.T) {
 		FasthttpProxy: TaskConfig.Yaml.Proxy,
 		Headers:       Headers,
 	}
-	task, err := crawler.NewCrawlerTask(&ctx, targets, TaskConfig)
+	PliuginsMsg := make(chan map[string]interface{}, 1)
+	task, err := crawler.NewCrawlerTask(&ctx, targets, TaskConfig, &PliuginsMsg)
 	if err != nil {
 		t.Errorf("create crawler task failed.")
 		os.Exit(-1)

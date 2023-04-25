@@ -908,7 +908,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 			// 	continue
 			// }
 
-			Crawtask, err := crawler.NewCrawlerTask(t.Ctx, Target, t.TaskConfig)
+			Crawtask, err := crawler.NewCrawlerTask(t.Ctx, Target, t.TaskConfig, &t.PliuginsMsg)
 			Crawtask.Result.Hostid = Target.DomainId
 
 			//是否通知socket消息,一般插入数据库默认为BS模式
@@ -1200,6 +1200,7 @@ func (t *Task) Init() {
 	t.lock = &sync.Mutex{}
 	t.jslock = &sync.Mutex{}
 	t.PliuginsMsg = make(chan map[string]interface{}, 1)
+
 	t.stoppluginmsg = make(chan struct{})
 	t.DoStartSignal = make(chan bool, 1)
 	t.ScartTime = time.Now()

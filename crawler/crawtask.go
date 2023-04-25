@@ -102,6 +102,7 @@ const (
 根据请求列表生成tabTask协程任务列表
 */
 func (t *CrawlerTask) generateTabTask(req *model.Request) *tabTask {
+
 	task := tabTask{
 		crawlerTask:     t,
 		browser:         t.Browser,
@@ -110,6 +111,7 @@ func (t *CrawlerTask) generateTabTask(req *model.Request) *tabTask {
 		IsSocket:        t.IsSocket,
 		crawledCount:    &t.crawledCount,
 		WebSiteFileList: &t.WebSiteFileList,
+		SocketMsg:       t.SocketMsg,
 	}
 
 	task.Ratelimite.InitRate(uint(t.QPS))
@@ -246,7 +248,9 @@ func (t *tabTask) Task() {
 				if !FilterKey(req.URL.String(), t.crawlerTask.Config.IgnoreKeywords) {
 					t.crawlerTask.addTask2Pool(req)
 					//这里通知进度条
-					util.SendToSocket(t.SocketMsg, 4, "crawler", req.URL.String())
+					if t.IsSocket {
+						util.SendToSocket(t.SocketMsg, 4, "crawler", req.URL.String())
+					}
 				}
 			}
 		} else {
@@ -267,7 +271,7 @@ func (t *tabTask) Task() {
 *
 新建爬虫任务
 */
-func NewCrawlerTask(ctx *context.Context, target *model.Request, taskConf config.TaskConfig) (*CrawlerTask, error) {
+func NewCrawlerTask(ctx *context.Context, target *model.Request, taskConf config.TaskConfig, socketMsg *chan map[string]interface{}) (*CrawlerTask, error) {
 	mctx, cancel := context.WithCancel(context.Background())
 	crawlerTask := CrawlerTask{
 		Result: &Result{},
@@ -277,9 +281,10 @@ func NewCrawlerTask(ctx *context.Context, target *model.Request, taskConf config
 				HostLimit: target.URL.Host,
 			},
 		},
-		TaskCtx: ctx,
-		Ctx:     &mctx,
-		Cancel:  &cancel,
+		TaskCtx:   ctx,
+		Ctx:       &mctx,
+		Cancel:    &cancel,
+		SocketMsg: socketMsg,
 	}
 
 	// _newReq := *target
