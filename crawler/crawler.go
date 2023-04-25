@@ -398,6 +398,7 @@ func (tab *Tab) ListenTarget(extends interface{}) {
 					} else if util.GetScanDeepByUrl(ev.Request.URL) > int(tab.Scandeep) {
 						logger.Debug("AJAX request add Url forbiden because ScanDeep limit")
 						a = fetch.FailRequest(ev.RequestID, network.ErrorReasonAborted)
+
 						// a = fetch.ContinueRequest(ev.RequestID)
 					} else {
 						a = fetch.ContinueRequest(ev.RequestID)
