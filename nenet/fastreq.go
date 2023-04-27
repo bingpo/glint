@@ -94,7 +94,6 @@ func CopyConfReq(data interface{}, dstRequest *fasthttp.Request) error {
 func (sess *Session) doRequest(verb string, url string, headers map[string]string, body []byte) (*fasthttp.Request, *fasthttp.Response, error) {
 	var err error
 	verb = strings.ToUpper(verb)
-	//bodyReader := bytes.NewReader(body)
 
 	req := fasthttp.AcquireRequest()
 

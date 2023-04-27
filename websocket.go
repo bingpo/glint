@@ -281,9 +281,9 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 			for i, task := range Tasks {
 				uinttask, _ := strconv.Atoi(taskid)
 				if task.TaskId == uinttask {
-					Taskslock.Lock()
+					//Taskslock.Lock()
 					task.Status = TaskStop
-					Taskslock.Unlock()
+					//Taskslock.Unlock()
 					(*task.Cancel)()
 					Tasks = append(Tasks[:i], Tasks[i+1:]...)
 				}
@@ -486,6 +486,10 @@ func (t *Task) PluginMsgHandler(ctx context.Context) {
 			// if err != nil {
 			// 	msg = make(map[string]interface{})
 			// }
+			if _, ok := msg["crawler"]; ok {
+				//logger.Info("发送漏洞:%v", msg)
+				err = netcomm.Sendmsg(status, msg, t.TaskId)
+			}
 
 		case <-t.stoppluginmsg:
 			_, ok := <-t.PliuginsMsg

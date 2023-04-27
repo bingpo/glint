@@ -11,6 +11,7 @@ import (
 	"glint/util"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/panjf2000/ants/v2"
 )
@@ -231,12 +232,23 @@ func (t *tabTask) Task() {
 
 	tab.Crawler(nil)
 
+	if len(tab.ResultList) == 0 {
+		return
+	}
+
+	if tab.ResultList[0] == nil {
+		return
+	}
 	// 收集结果
 	//t.crawlerTask.Result.resultLock.Lock()
 	//defer t.crawlerTask.Result.resultLock.Unlock()
 	t.crawlerTask.Result.AllReqList = append(t.crawlerTask.Result.AllReqList, tab.ResultList...)
 	*t.crawledCount -= 1
 	logger.Info("当前爬虫完成,剩余爬虫数:%d", (*t.crawledCount))
+
+	if util.CtxDone(*t.crawlerTask.TaskCtx, time.Second*2) {
+		return
+	}
 
 	for _, req := range tab.ResultList {
 		logger.Debug("Filter Request:%s", req.URL.String())
@@ -260,6 +272,10 @@ func (t *tabTask) Task() {
 				//t.crawlerTask.Result.resultLock.Unlock()
 				if !FilterKey(req.URL.String(), t.crawlerTask.Config.IgnoreKeywords) {
 					t.crawlerTask.addTask2Pool(req)
+					//这里通知进度条
+					if t.IsSocket {
+						util.SendToSocket(t.SocketMsg, 4, "crawler", req.URL.String())
+					}
 				}
 			}
 		}
