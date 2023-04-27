@@ -489,6 +489,47 @@ func (t *Task) EnablePluginsALLURL(
 	}
 }
 
+func getLength(originUrls map[string]interface{}) int {
+	length := 0
+	for _, v := range originUrls {
+		if valueList, ok := v.([]interface{}); ok {
+			for _, val := range valueList {
+				logger.Debug("%v", val)
+				length++
+			}
+		}
+	}
+	return length
+}
+
+func sendRequests(stream pb.RouteGuide_RouteChatClient, values map[string]interface{}, length int) {
+	for _, v := range values {
+		if valueList, ok := v.([]interface{}); ok {
+			sendRequestList(stream, valueList, length)
+		}
+	}
+}
+
+func sendRequestList(stream pb.RouteGuide_RouteChatClient, valueList []interface{}, length int) {
+	for _, v := range valueList {
+		if value, ok := v.(map[string]interface{}); ok {
+			value["isFile"] = false
+			value["taskid"] = 1
+			value["targetLength"] = length
+			m, err := structpb.NewValue(value)
+			if err != nil {
+				logger.Error("client.RouteChat NewValue m failed: %v", err)
+				continue
+			}
+
+			data := pb.JsonRequest{Details: m.GetStructValue()}
+			if err := stream.Send(&data); err != nil {
+				logger.Error("client.RouteChat JsonRequest failed: %v", err)
+			}
+		}
+	}
+}
+
 // 自定义js脚本，此代码与Jackdaw通讯
 // 这个和插件分开处理。
 func (t *Task) RunCustomJS(
@@ -571,46 +612,35 @@ func (t *Task) RunCustomJS(
 					// //通知socket消息
 					// t.PliuginsMsg <- Element
 
-				} else if _, ok := in.GetReport().Fields["state"]; ok {
-					//WG.Done()
 				}
 			}
-
 		}
 	}()
 
-	var length = 0
+	length := getLength(originUrls)
 	//对于目标链接传递
-	for _, v := range originUrls {
-		if value_list, ok := v.([]interface{}); ok {
-			for _, v := range value_list {
-				logger.Debug("%v", v)
-				length++
-			}
-		}
-	}
+	// for _, v := range originUrls {
+	// 	if value_list, ok := v.([]interface{}); ok {
+	// 		for _, v := range value_list {
+	// 			if value, ok := v.(map[string]interface{}); ok {
+	// 				value["isFile"] = false
+	// 				value["taskid"] = 1
+	// 				value["targetLength"] = length
+	// 				m, err := structpb.NewValue(value)
+	// 				if err != nil {
+	// 					logger.Error("client.RouteChat NewValue m failed: %v", err)
+	// 				}
+	// 				//WG.Add(1)
+	// 				data := pb.JsonRequest{Details: m.GetStructValue()}
+	// 				if err := stream.Send(&data); err != nil {
+	// 					logger.Error("client.RouteChat JsonRequest failed: %v", err)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	//}
+	sendRequests(stream, originUrls, length)
 
-	//对于目标链接传递
-	for _, v := range originUrls {
-		if value_list, ok := v.([]interface{}); ok {
-			for _, v := range value_list {
-				if value, ok := v.(map[string]interface{}); ok {
-					value["isFile"] = false
-					value["taskid"] = 1
-					value["targetLength"] = length
-					m, err := structpb.NewValue(value)
-					if err != nil {
-						logger.Error("client.RouteChat NewValue m failed: %v", err)
-					}
-					//WG.Add(1)
-					data := pb.JsonRequest{Details: m.GetStructValue()}
-					if err := stream.Send(&data); err != nil {
-						logger.Error("client.RouteChat JsonRequest failed: %v", err)
-					}
-				}
-			}
-		}
-	}
 	<-waitc
 	logger.Debug("pass")
 	//WG.Wait()
@@ -1047,6 +1077,11 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		// t.close()
 
 		logger.Info("The End for task:%d", t.TaskId)
+
+		t.Status = TaskStop
+		//发送结束消息
+		netcomm.Sendmsg(4, "The Task is End", t.TaskId)
+
 		runtime.GC()
 	} else {
 		//不开启爬虫启动被动代理模式

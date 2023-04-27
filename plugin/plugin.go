@@ -338,9 +338,9 @@ func (p *Plugin) Run(args PluginOption) error {
 
 				Element["status"] = 3
 				Element["vul"] = p.PluginId
-				Element["request"] = ReqMsg //base64.StdEncoding.EncodeToString([]byte())
-				Element["response"] = Resp  //base64.StdEncoding.EncodeToString([]byte())
-				Element["deail"] = vuln.Output
+				// Element["request"] = ReqMsg //base64.StdEncoding.EncodeToString([]byte())
+				// Element["response"] = Resp  //base64.StdEncoding.EncodeToString([]byte())
+				// Element["deail"] = vuln.Output
 				Element["url"] = vuln.Target
 				Element["vul_level"] = vuln.VulnerableLevel
 				Element["result_id"] = Result_id

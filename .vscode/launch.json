@@ -40,13 +40,13 @@
             ],
         },
         {
-            "name": "websocket",
+            "name": "socket",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceRoot}",
             "args": [
-                "--websocket",
+                "--socket",
                 "0.0.0.0:3009",
                 "--cert",
                 "server.pem",

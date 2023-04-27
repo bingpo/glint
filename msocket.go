@@ -58,6 +58,7 @@ func (m *MConn) Listen(con net.Conn) {
 		if err != nil {
 			log.Println(err.Error())
 		}
+
 		if uint32(reader.Buffered()) < length+4 {
 			continue
 		}
