@@ -54,7 +54,8 @@
                 "server.key",
                 "--dbconnect",
                 "--configtype",
-                "yaml"
+                "yaml",
+                // "--EnableJackdaw"
             ],
         }
     ],

@@ -1078,9 +1078,9 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 
 		logger.Info("The End for task:%d", t.TaskId)
 
-		t.Status = TaskStop
-		//发送结束消息
-		netcomm.Sendmsg(4, "The Task is End", t.TaskId)
+		// t.Status = TaskStop
+		// //发送结束消息
+		// netcomm.Sendmsg(4, "The Task is End", t.TaskId)
 
 		runtime.GC()
 	} else {
@@ -1110,6 +1110,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		}
 
 		defer listener.Close()
+
 		go func() {
 			for {
 				con, err := listener.Accept()
