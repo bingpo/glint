@@ -1074,7 +1074,7 @@ func Str2Byte(s string) []byte {
 
 // Byte2Str return string of b
 func Byte2Str(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	return string(b) // 将字节切片转换为字符串
 }
 
 func Initgob() {
