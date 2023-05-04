@@ -703,7 +703,7 @@ func (t *Task) AddPlugins(
 	pluginInternal := plugin.Plugin{
 		PluginName:   PluginName,
 		PluginId:     PluginId,
-		MaxPoolCount: 3,
+		MaxPoolCount: 2,
 		Callbacks:    myfunc,
 		InstallDB:    installDb,
 		Spider:       Payloadcarrier,

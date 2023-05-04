@@ -21,7 +21,7 @@ func Test_customjs_2(t *testing.T) {
 		port = "50051"
 	)
 
-	file, err := os.Open("../originUrls.json")
+	file, err := os.Open("../json_testfile/craw_test.json")
 	if err != nil {
 		panic(err)
 	}
