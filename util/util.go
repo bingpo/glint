@@ -32,6 +32,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 	"unsafe"
 
 	"github.com/PuerkitoBio/goquery"
@@ -1074,7 +1075,10 @@ func Str2Byte(s string) []byte {
 
 // Byte2Str return string of b
 func Byte2Str(b []byte) string {
-	return string(b) // 将字节切片转换为字符串
+	if !utf8.Valid(b) {
+		return ""
+	}
+	return string(b[:])
 }
 
 func Initgob() {
