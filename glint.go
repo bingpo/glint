@@ -46,6 +46,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -162,6 +163,7 @@ type crawSiteList struct {
 
 func main() {
 
+	debug.SetGCPercent(500)
 	// go func() {
 	// 	ip := "0.0.0.0:6060"
 	// 	if err := http.ListenAndServe(ip, nil); err != nil {
