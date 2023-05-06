@@ -16,6 +16,8 @@ import (
 	"github.com/panjf2000/ants/v2"
 )
 
+const craw_flag = 5
+
 type Result struct {
 	ReqList       []*model.Request // 返回的同域名结果
 	AllReqList    []*model.Request // 所有域名的请求
@@ -261,7 +263,7 @@ func (t *tabTask) Task() {
 					t.crawlerTask.addTask2Pool(req)
 					//这里通知进度条
 					if t.IsSocket {
-						util.SendToSocket(t.SocketMsg, 4, "crawler", req.URL.String())
+						util.SendToSocket(t.SocketMsg, craw_flag, "crawler", req.URL.String())
 					}
 				}
 			}
