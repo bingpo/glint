@@ -262,7 +262,7 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 			return err
 		}
 		if status == TaskHasStart {
-			netcomm.Sendmsg(1, "The Task Has Started", id)
+			netcomm.Sendmsg(6, "The Task Has Started", id)
 			return nil
 		}
 		//开始任务

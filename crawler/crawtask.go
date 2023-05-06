@@ -164,10 +164,14 @@ func (t *CrawlerTask) Run() {
 
 	t.taskWG.Wait()
 
-	// 全部域名
-	t.Result.AllDomainList = AllDomainCollect(t.Result.AllReqList)
-	// 子域名
-	t.Result.SubDomainList = SubDomainCollect(t.Result.AllReqList, t.RootDomain)
+	if len(t.Result.AllReqList) != 0 {
+
+		// 全部域名
+		t.Result.AllDomainList = AllDomainCollect(t.Result.AllReqList)
+		// 子域名
+		t.Result.SubDomainList = SubDomainCollect(t.Result.AllReqList, t.RootDomain)
+	}
+
 }
 
 /*
@@ -276,7 +280,7 @@ func (t *tabTask) Task() {
 					t.crawlerTask.addTask2Pool(req)
 					//这里通知进度条
 					if t.IsSocket {
-						util.SendToSocket(t.SocketMsg, 4, "crawler", req.URL.String())
+						util.SendToSocket(t.SocketMsg, craw_flag, "crawler", req.URL.String())
 					}
 				}
 			}

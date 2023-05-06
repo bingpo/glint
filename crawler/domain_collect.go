@@ -27,12 +27,15 @@ func AllDomainCollect(reqList []*model.Request) []string {
 	uniqueSet := mapset.NewSet()
 	var allDomainList []string
 	for _, req := range reqList {
-		domain := req.URL.Hostname()
-		if uniqueSet.Contains(domain) {
-			continue
+		if req != nil {
+			domain := req.URL.Hostname()
+			if uniqueSet.Contains(domain) {
+				continue
+			}
+			uniqueSet.Add(domain)
+			allDomainList = append(allDomainList, req.URL.Hostname())
 		}
-		uniqueSet.Add(domain)
-		allDomainList = append(allDomainList, req.URL.Hostname())
+
 	}
 	return allDomainList
 }
