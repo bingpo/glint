@@ -252,6 +252,8 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 		// 	netcomm.Sendmsg(-1, "授权校验失败", id)
 		// }
 
+		//清理残余的chrome,一般这个操作chrome处理不当的情况下出现，在还没完善前的临时补救方案
+
 		status, err := ts.GetTaskStatus(mjson)
 		if err != nil {
 			//err = fmt.Errorf("[./websocket.go:Task() error] unkown taskid for the json")
@@ -277,15 +279,16 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 		go task.PluginMsgHandler(*task.Ctx)
 		// go task.quitmsg()
 	} else if strings.ToLower(Status) == "close" && !IsStartProxyMode {
+
 		if len(Tasks) != 0 {
 			for i, task := range Tasks {
 				uinttask, _ := strconv.Atoi(taskid)
 				if task.TaskId == uinttask {
-					//Taskslock.Lock()
-					task.Status = TaskStop
-					//Taskslock.Unlock()
 					(*task.Cancel)()
+					Taskslock.Lock()
+					task.Status = TaskStop
 					Tasks = append(Tasks[:i], Tasks[i+1:]...)
+					Taskslock.Unlock()
 				}
 			}
 			if len(Tasks) == 0 {
@@ -314,9 +317,11 @@ func (ts *TaskServer) GetTaskStatus(json map[string]interface{}) (util.Status, e
 		for _, task := range Tasks {
 			taskid, err := GetTaskId(json)
 			if err != nil {
+				task.Status = TaskERROR
 				return TaskERROR, err
 			}
 			if task.TaskId == taskid {
+				task.Status = TaskHasStart
 				return TaskHasStart, nil
 			}
 		}

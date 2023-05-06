@@ -9,6 +9,7 @@ import (
 	"glint/plugin"
 	"glint/util"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -41,11 +42,16 @@ type CheckType struct {
 
 func (p *PluginParam) ParsePluginParams(group *plugin.GroupData, ct CheckType) {
 	var err error
+	var m sync.Mutex
+	m.Lock()
+	defer m.Unlock()
+
 	if p.Session == nil {
 		p.Session = make(map[string]interface{}, 0)
 	}
 
 	if !ct.IsMultipleUrls {
+
 		for k, v := range group.UrlInfo {
 			p.Session[k] = v
 		}

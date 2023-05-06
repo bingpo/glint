@@ -643,7 +643,7 @@ func (t *Task) RunCustomJS(
 	sendRequests(stream, originUrls, length)
 
 	<-waitc
-	logger.Debug("pass")
+	logger.Warning("End waiting for custom js")
 	//WG.Wait()
 }
 
@@ -891,6 +891,27 @@ func CrawlerConvertToMap(
 	}
 }
 
+func removeTaskAndUpdateChrome(tasks []*Task, t *Task) error {
+	found := false
+	for i, task := range tasks {
+		if t.TaskId == task.TaskId {
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			found = true
+			break
+		}
+	}
+	if !found {
+		return errors.New("task not found")
+	}
+	if len(tasks) == 0 {
+		if err := util.KillChrome(); err != nil {
+			logger.Error("failed to kill Chrome: ", err)
+			return err
+		}
+	}
+	return nil
+}
+
 func (t *Task) dostartTasks(tconfig tconfig) error {
 	var (
 		err       error
@@ -1075,10 +1096,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 			t.SaveQuitTimeToDB()
 		}
 
-		// t.close()
-
 		logger.Info("The End for task:%d", t.TaskId)
-
 		// t.Status = TaskStop
 		// //发送结束消息
 		// netcomm.Sendmsg(4, "The Task is End", t.TaskId)
@@ -1222,12 +1240,20 @@ func (t *Task) agentPluginRun(args *proxy.PassiveProxy) {
 }
 
 // removetasks 移除总任务进度的任务ID
-func removetasks(id int) {
+func removetasks(id int) error {
 	for index, t := range Tasks {
 		if t.TaskId == id {
 			Tasks = append(Tasks[:index], Tasks[index+1:]...)
 		}
 	}
+	if len(Tasks) == 0 {
+		logger.Warning("任务队列为空,清理无法通讯的chrome,这可能会引起其他错误")
+		if err := util.KillChrome(); err != nil {
+			logger.Error("failed to kill Chrome: ", err)
+			return err
+		}
+	}
+	return nil
 }
 
 func (t *Task) Init() {
