@@ -573,6 +573,7 @@ func (t *Task) RunCustomJS(
 				// channel 已经被关闭
 				return
 			} else {
+				stream.CloseSend()
 				close(waitc)
 			}
 			return
@@ -589,6 +590,7 @@ func (t *Task) RunCustomJS(
 					// channel 已经被关闭
 					return
 				} else {
+					stream.CloseSend()
 					close(waitc)
 				}
 
@@ -604,6 +606,7 @@ func (t *Task) RunCustomJS(
 					// channel 已经被关闭
 					return
 				} else {
+					stream.CloseSend()
 					close(waitc)
 				}
 				logger.Error("routeChat error %s", err.Error())
