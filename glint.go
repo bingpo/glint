@@ -564,15 +564,51 @@ func (t *Task) RunCustomJS(
 	}
 
 	waitc := make(chan struct{})
+
+	go func() {
+		select {
+		case <-(*t.Ctx).Done():
+			_, ok := <-waitc
+			if !ok {
+				// channel 已经被关闭
+				return
+			} else {
+				stream.CloseSend()
+				close(waitc)
+			}
+			return
+		default:
+		}
+	}()
+
 	go func() {
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
-				close(waitc)
+				_, ok := <-waitc
+				if !ok {
+					// channel 已经被关闭
+					return
+				} else {
+					stream.CloseSend()
+					close(waitc)
+				}
+
 				return
 			}
+			// select{
+
+			// }
+			(*t.Ctx).Done()
 			if err != nil {
-				close(waitc)
+				_, ok := <-waitc
+				if !ok {
+					// channel 已经被关闭
+					return
+				} else {
+					stream.CloseSend()
+					close(waitc)
+				}
 				logger.Error("routeChat error %s", err.Error())
 				return
 			}
