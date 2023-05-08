@@ -1089,6 +1089,14 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		}
 
 	quit:
+
+		if t.Status != TaskStop {
+			netcomm.Sendmsg(2, "The Task is End", t.TaskId)
+		} else {
+			netcomm.Sendmsg(4, "The Task is End", t.TaskId)
+		}
+		(*t.Cancel)()
+
 		Taskslock.Lock()
 		removetasks(t.TaskId)
 		Taskslock.Unlock()
