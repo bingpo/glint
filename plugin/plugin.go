@@ -221,10 +221,11 @@ func (p *Plugin) Run(args PluginOption) error {
 			for _, urlinter := range ur {
 				p.threadwg.Add(1)
 				go func(type_name string, urlinter map[string]interface{}) {
+					n := util.CopyMap(urlinter)
 					//单体封装
 					data := GroupData{
 						GroupType:        type_name,
-						UrlInfo:          urlinter,
+						UrlInfo:          n,
 						Spider:           p.Spider,
 						Pctx:             p.Ctx,
 						Pcancel:          p.Cancel,
