@@ -69,6 +69,9 @@ func Test_customjs_2(t *testing.T) {
 				close(waitc)
 				return
 			}
+			if in.Report == nil {
+				continue
+			}
 			//log.Printf("Got Taskid %d Targetid:%d Report:%v", in.GetTaskid(), in.GetTargetid(), in.GetReport().Fields)
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
 				logger.Success("发现漏洞!")
