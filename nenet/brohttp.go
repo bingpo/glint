@@ -303,7 +303,7 @@ func (spider *Spider) Init(TaskConfig config.TaskConfig) error {
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*120)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*30)
 	c, cancel := chromedp.NewExecAllocator(ctx, options...)
 	ctx, cancel = chromedp.NewContext(c) // chromedp.WithDebugf(logger.Info)
 	spider.Cancel = &cancel

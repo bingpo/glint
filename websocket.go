@@ -279,7 +279,7 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 		go task.PluginMsgHandler(*task.Ctx)
 		// go task.quitmsg()
 	} else if strings.ToLower(Status) == "close" && !IsStartProxyMode {
-
+		var IsClosed = false
 		if len(Tasks) != 0 {
 			for i, task := range Tasks {
 				uinttask, _ := strconv.Atoi(taskid)
@@ -289,7 +289,12 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 					task.Status = TaskStop
 					Tasks = append(Tasks[:i], Tasks[i+1:]...)
 					Taskslock.Unlock()
+					IsClosed = true
 				}
+			}
+			if !IsClosed {
+				uinttask, _ := strconv.Atoi(taskid)
+				netcomm.Sendmsg(4, "close error", uinttask)
 			}
 			if len(Tasks) == 0 {
 				err := util.KillChrome() //

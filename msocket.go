@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
+	"glint/logger"
 	"io"
 	"log"
 	"net"
@@ -65,6 +66,7 @@ func (m *MConn) Listen(con net.Conn) {
 		data := make([]byte, length+4)
 		_, err = reader.Read(data)
 		if err != nil {
+			logger.Error("received data error :%s", err.Error())
 			continue
 		}
 		log.Println("received msg", string(data[4:]))
