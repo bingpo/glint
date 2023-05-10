@@ -21,7 +21,11 @@ func Test_customjs_2(t *testing.T) {
 		port = "50051"
 	)
 
-	file, err := os.Open("../json_testfile/craw_test.json")
+	//测试超时
+	timeout := time.After(20 * time.Second)
+	//done := make(chan error, 1)
+
+	file, err := os.Open("../json_testfile/php_deserialization.json")
 	if err != nil {
 		panic(err)
 	}
@@ -137,9 +141,12 @@ func Test_customjs_2(t *testing.T) {
 			}
 		}
 	}
-	<-waitc
+	//<-waitc
+	//stream.CloseSend()
+
+	<-timeout
 	stream.CloseSend()
-	//WG.Wait()
+
 	fmt.Println("finish")
 
 }
