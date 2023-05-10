@@ -565,50 +565,31 @@ func (t *Task) RunCustomJS(
 
 	waitc := make(chan struct{})
 
-	go func() {
-		select {
-		case <-(*t.Ctx).Done():
-			_, ok := <-waitc
-			if !ok {
-				// channel 已经被关闭
-				return
-			} else {
-				stream.CloseSend()
-				close(waitc)
-			}
-			return
-		default:
-		}
-	}()
+	// go func() {
+	// 	select {
+	// 	case <-(*t.Ctx).Done():
+	// 		_, ok := <-waitc
+	// 		if !ok {
+	// 			// channel 已经被关闭
+	// 			return
+	// 		} else {
+	// 			stream.CloseSend()
+	// 			close(waitc)
+	// 		}
+	// 		return
+	// 	default:
+	// 	}
+	// }()
 
 	go func() {
 		for {
 			in, err := stream.Recv()
 			if err == io.EOF {
-				_, ok := <-waitc
-				if !ok {
-					// channel 已经被关闭
-					return
-				} else {
-					stream.CloseSend()
-					close(waitc)
-				}
-
+				close(waitc)
 				return
 			}
-			// select{
-
-			// }
-			(*t.Ctx).Done()
 			if err != nil {
-				_, ok := <-waitc
-				if !ok {
-					// channel 已经被关闭
-					return
-				} else {
-					stream.CloseSend()
-					close(waitc)
-				}
+				close(waitc)
 				logger.Error("routeChat error %s", err.Error())
 				return
 			}
@@ -678,7 +659,14 @@ func (t *Task) RunCustomJS(
 	//}
 	sendRequests(stream, originUrls, length)
 
-	<-waitc
+	// 等待任务完成或超时
+	select {
+	case <-waitc:
+		fmt.Println("任务完成！")
+	case <-time.After(1 * time.Hour):
+		fmt.Println("超时了！")
+	}
+
 	logger.Warning("End waiting for custom js")
 	//WG.Wait()
 }
@@ -740,7 +728,7 @@ func (t *Task) AddPlugins(
 	pluginInternal := plugin.Plugin{
 		PluginName:   PluginName,
 		PluginId:     PluginId,
-		MaxPoolCount: 2,
+		MaxPoolCount: 5,
 		Callbacks:    myfunc,
 		InstallDB:    installDb,
 		Spider:       Payloadcarrier,
@@ -1125,6 +1113,14 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		}
 
 	quit:
+
+		if t.Status != TaskStop {
+			netcomm.Sendmsg(2, "The Task is End", t.TaskId)
+		} else {
+			netcomm.Sendmsg(4, "The Task is End", t.TaskId)
+		}
+		(*t.Cancel)()
+
 		Taskslock.Lock()
 		removetasks(t.TaskId)
 		Taskslock.Unlock()

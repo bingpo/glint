@@ -2,7 +2,6 @@ package customjs
 
 import (
 	"context"
-	"fmt"
 	"glint/logger"
 	pb "glint/mesonrpc"
 	"io"
@@ -20,7 +19,7 @@ func JSRPC(urlinfo map[string]interface{}) {
 	if err != nil {
 		logger.Error("rpc error %s", err.Error())
 	}
-	fmt.Println(m.String())
+	//fmt.Println(m.String())
 
 	const (
 		port = "50051"
