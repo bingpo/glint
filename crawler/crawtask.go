@@ -393,7 +393,7 @@ func NewCrawlerTask(ctx *context.Context, target *model.Request, taskConf config
 	// 创建协程池
 	p, _ := ants.NewPool(taskConf.Yaml.MaxTabsCount)
 	crawlerTask.Pool = p
-	fmt.Println(target.Headers)
+	//fmt.Println(target.Headers)
 	// target.Headers = taskConf.Yaml.ExtraHeaders
 	return &crawlerTask, nil
 }

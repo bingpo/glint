@@ -689,9 +689,9 @@ func (tab *Tab) HandleBindingCalled(event *runtime.EventBindingCalled) {
 			tab.AddResultUrl(config.GET, bcPayload.Args[0], bcPayload.Args[1])
 		}
 	}
-	if bcPayload.Name == "Test" {
-		fmt.Println(bcPayload.Args)
-	}
+	// if bcPayload.Name == "Test" {
+	// 	fmt.Println(bcPayload.Args)
+	// }
 	tab.Evaluate(fmt.Sprintf(DeliverResultJS, bcPayload.Name, bcPayload.Seq, "s"))
 }
 
@@ -1145,6 +1145,12 @@ func (tab *Tab) AddResultUrl(method string, _url string, source string) {
 
 	// 转化为新格式
 	Model2url = &model2.URL{URL: *url}
+
+	//过滤URL页面是否存在
+
+	if !util.PageExists(url.String()) {
+		return
+	}
 
 	// 添加Cookie
 	if cookie, ok := tab.NavigateReq.Headers["Cookie"]; ok {
