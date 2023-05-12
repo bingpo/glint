@@ -749,7 +749,7 @@ func (t *Task) AddPlugins(
 	// }
 
 	// if IsSocket
-	CopyReqList := util.CopyMap(ReqList)
+	CopyReqList := util.DeepCopyMap(ReqList)
 
 	args := plugin.PluginOption{
 		PluginWg:         &t.PluginWg,
@@ -930,8 +930,11 @@ func removeTaskAndUpdateChrome(tasks []*Task, t *Task) error {
 	if len(tasks) == 0 {
 		if err := util.KillChrome(); err != nil {
 			logger.Error("failed to kill Chrome: ", err)
-			return err
 		}
+		if err := util.KillcustomJS(); err != nil {
+			logger.Error("failed to kill customJS: ", err)
+		}
+		return nil
 	}
 	return nil
 }
@@ -1101,7 +1104,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		t.EnablePluginsByUri(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 		t.EnablePluginsByDomain(URISList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 
-		Jsonjs = util.CopyMap(URISList)
+		Jsonjs = util.DeepCopyMap(URISList)
 		if EnalbeJackdaw {
 			t.RunCustomJS(Jsonjs, &FileList, tconfig.HttpsCert, tconfig.HttpsCertKey, false, issocket)
 		}
@@ -1284,6 +1287,11 @@ func removetasks(id int) error {
 			logger.Error("failed to kill Chrome: ", err)
 			return err
 		}
+		if err := util.KillcustomJS(); err != nil {
+			logger.Error("failed to kill customJS: ", err)
+			return err
+		}
+		return nil
 	}
 	return nil
 }

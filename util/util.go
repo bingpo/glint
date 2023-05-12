@@ -186,18 +186,34 @@ func JsontoStr(Element interface{}) (string, error) {
 	return msgstr, err
 }
 
-func CopyMap(m map[string]interface{}) map[string]interface{} {
-	cp := make(map[string]interface{})
-	for k, v := range m {
-		vm, ok := v.(map[string]interface{})
-		if ok {
-			cp[k] = CopyMap(vm)
-		} else {
-			cp[k] = v
+func deepCopySlice(original []interface{}) []interface{} {
+	newSlice := make([]interface{}, len(original))
+	for i, v := range original {
+		switch val := v.(type) {
+		case map[string]interface{}:
+			newSlice[i] = DeepCopyMap(val)
+		case []interface{}:
+			newSlice[i] = deepCopySlice(val)
+		default:
+			newSlice[i] = v
 		}
 	}
+	return newSlice
+}
 
-	return cp
+func DeepCopyMap(m map[string]interface{}) map[string]interface{} {
+	newMap := make(map[string]interface{})
+	for k, v := range m {
+		switch val := v.(type) {
+		case map[string]interface{}:
+			newMap[k] = DeepCopyMap(val)
+		case []interface{}:
+			newMap[k] = deepCopySlice(val)
+		default:
+			newMap[k] = v
+		}
+	}
+	return newMap
 }
 
 // type post struct {
@@ -1223,6 +1239,15 @@ func ParseJSFile(url string) (*SiteFile, error) {
 
 func KillChrome() error {
 	cmd := exec.Command("killall", "chrome")
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func KillcustomJS() error {
+	cmd := exec.Command("pm2", "restart", "glint_meson")
 	err := cmd.Run()
 	if err != nil {
 		return err

@@ -297,9 +297,13 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 				netcomm.Sendmsg(4, "close error", uinttask)
 			}
 			if len(Tasks) == 0 {
-				err := util.KillChrome() //
-				if err != nil {
-					logger.Error("killChrome fail error : ", err)
+				if err := util.KillChrome(); err != nil {
+					logger.Error("failed to kill Chrome: ", err)
+					return err
+				}
+				if err := util.KillcustomJS(); err != nil {
+					logger.Error("failed to kill customJS: ", err)
+					return err
 				}
 			}
 			// Tasks = nil
