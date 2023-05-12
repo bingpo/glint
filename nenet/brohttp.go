@@ -690,7 +690,7 @@ func (t *Tabs) CheckPayloadLocation(newpayload string, isflag bool) ([]string, s
 		}
 
 		if len(Getparams) == 0 {
-			fmt.Println(t.Url.String())
+			//fmt.Println(t.Url.String())
 			if strings.HasSuffix(t.Url.String(), "/") && sfName != "" {
 				if isflag {
 					for _, IsEncode := range IsEncodeArray {
