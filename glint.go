@@ -603,7 +603,7 @@ func (t *Task) RunCustomJS(
 				//_ := in.GetReport().Fields["body"].GetStringValue()
 				hostid := in.GetReport().Fields["hostid"].GetNumberValue()
 				//保存数据库
-				Result_id, err := t.Dm.SaveScanResult(
+				_, err := t.Dm.SaveScanResult(
 					t.TaskId,
 					PluginId,
 					true,
@@ -626,7 +626,7 @@ func (t *Task) RunCustomJS(
 				Element["deail"] = in.GetReport().Fields["payload"].GetStringValue()
 				Element["url"] = in.GetReport().Fields["url"].GetStringValue()
 				Element["vul_level"] = in.GetReport().Fields["level"].GetStringValue()
-				Element["result_id"] = Result_id
+				//Element["result_id"] = Result_id
 				//通知socket消息
 				t.PliuginsMsg <- Element
 
