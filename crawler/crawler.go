@@ -1092,15 +1092,31 @@ func (tab *Tab) collectCommentLinks() {
 	}
 }
 
+// GetPageURL 获取当前页面的URL
+func (tab *Tab) GetPageURL() (string, error) {
+	ctx := tab.GetExecutor()
+	subctx, cancel := AllocSubContextWithTimeOut(ctx, time.Second*3)
+	defer cancel()
+	var url string
+	// 使用chromedp从当前页面中获取URL
+	if err := chromedp.Run(subctx, chromedp.Location(&url)); err != nil {
+		return "", fmt.Errorf("获取URL时出错: %w", err)
+	}
+	return url, nil
+}
+
 func (tab *Tab) AddResultUrl(method string, _url string, source string) {
-	navUrl := tab.NavigateReq.URL
-	url, err := model2.GetUrl(_url, *navUrl)
+	var Model2url *model2.URL
+
+	PageURL, err := tab.GetPageURL()
 	if err != nil {
+		logger.Error("error %s", err.Error())
 		return
 	}
 
-	if tab.IsHTTPS && !strings.EqualFold(url.Scheme, "https") {
-		fmt.Printf("链接:%s因网站开放https端口但收录的确是非https链接,因此不收录", url.String())
+	url, err := util.UriResolve(_url, PageURL)
+	if err != nil {
+		logger.Error("uri resolve error %s", err.Error())
 		return
 	}
 
@@ -1108,16 +1124,24 @@ func (tab *Tab) AddResultUrl(method string, _url string, source string) {
 		Headers:  map[string]interface{}{},
 		PostData: "",
 	}
-	referer := navUrl.String()
+
+	referer := PageURL
 	logger.Debug("pre add url: %s", url.String())
+
 	// 处理Host绑定
-	if host, ok := tab.NavigateReq.Headers["Host"]; ok {
-		if host != navUrl.Hostname() && url.Hostname() == host {
-			url, _ = model2.GetUrl(strings.Replace(url.String(), "://"+url.Hostname(), "://"+navUrl.Hostname(), -1), *navUrl)
-			option.Headers["Host"] = host
-			referer = strings.Replace(navUrl.String(), navUrl.Host, host.(string), -1)
-		}
-	}
+	logger.Debug("add url host %s", url.Hostname())
+	option.Headers["Host"] = url.Hostname()
+	// if host, ok := tab.NavigateReq.Headers["Host"]; ok {
+	// 	if url.Hostname() == host {
+	// 		url, _ = model2.GetUrl(strings.Replace(url.String(), "://"+url.Hostname(), "://"+navUrl.Hostname(), -1), *navUrl)
+	// 		option.Headers["Host"] = host
+	// 		referer = strings.Replace(navUrl.String(), navUrl.Host, host.(string), -1)
+	// 	}
+	// }
+
+	// 转化为新格式
+	Model2url = &model2.URL{URL: *url}
+
 	// 添加Cookie
 	if cookie, ok := tab.NavigateReq.Headers["Cookie"]; ok {
 		option.Headers["Cookie"] = cookie
@@ -1129,7 +1153,7 @@ func (tab *Tab) AddResultUrl(method string, _url string, source string) {
 		option.Headers[key] = value
 	}
 
-	req := model2.GetRequest(method, url, option)
+	req := model2.GetRequest(method, Model2url, option)
 	req.Source = source
 	req.GroupsId = "CollectLink"
 
