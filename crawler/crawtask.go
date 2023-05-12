@@ -316,14 +316,14 @@ func NewCrawlerTask(ctx *context.Context, target *model.Request, taskConf config
 
 	if strings.EqualFold(target.URL.Scheme, "http") {
 		target.URL.Scheme = "https"
-		if util.EvalHttpExist(target.URL.String()) {
+		if util.PageExists(target.URL.String()) {
 			target.URL.Scheme = "https"
 			crawlerTask.IsHTTPS = true
 		} else {
 			target.URL.Scheme = "http"
 		}
 	} else {
-		if util.EvalHttpExist(target.URL.String()) {
+		if util.PageExists(target.URL.String()) {
 			target.URL.Scheme = "https"
 			crawlerTask.IsHTTPS = true
 		} else {

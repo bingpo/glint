@@ -717,7 +717,7 @@ func (tab *Tab) Crawler(extends interface{}) error {
 	defer func() { tab.Eventchanel.exit <- 1 }()
 
 	go tab.WatchEventSubmit()
-	fmt.Println(aurora.Green(tab.NavigateReq.URL.String()))
+	//fmt.Println(aurora.Green(tab.NavigateReq.URL.String()))
 	err := chromedp.Run(*tab.Ctx,
 		runtime.Enable(),
 		// 开启网络层API
@@ -1130,7 +1130,11 @@ func (tab *Tab) AddResultUrl(method string, _url string, source string) {
 
 	// 处理Host绑定
 	logger.Debug("add url host %s", url.Hostname())
-	option.Headers["Host"] = url.Hostname()
+	//option.Headers["Host"] = url.Hostname()
+	option.Headers["User-Agent"] = " Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36"
+	option.Headers["Accept-Encoding"] = "gzip, deflate"
+	option.Headers["Accept-Language"] = "zh-CN,zh;q=0.9,en;q=0.8"
+
 	// if host, ok := tab.NavigateReq.Headers["Host"]; ok {
 	// 	if url.Hostname() == host {
 	// 		url, _ = model2.GetUrl(strings.Replace(url.String(), "://"+url.Hostname(), "://"+navUrl.Hostname(), -1), *navUrl)

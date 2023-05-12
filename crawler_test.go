@@ -177,7 +177,7 @@ func ExampleAllocSubContextWithTimeOut() {
 	); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(title)
+	//fmt.Println(title)
 
 	subctx0 := GetExecutor(&ctx)
 
@@ -213,7 +213,7 @@ func ExampleAllocSubContextWithTimeOut() {
 	); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(title)
+	//fmt.Println(title)
 
 	// Output:
 	// fancy website title
