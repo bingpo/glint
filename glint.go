@@ -350,18 +350,6 @@ func craw_cleanup(c *crawler.CrawlerTask) {
 	c.Reset()
 }
 
-// func (t *Task) task_cleanup() {
-// 	if len(t.Plugins) != 0 {
-// 		for _, plugin := range t.Plugins {
-// 			plugin.Pool.Tune(1)
-// 			(*plugin.Cancel)()
-// 			if plugin.Spider != nil {
-// 				plugin.Spider.Close()
-// 			}
-// 		}
-// 	}
-// }
-
 // 删除数据库内容
 func (t *Task) deletedbresult() error {
 	err := t.Dm.DeleteScanResult(t.TaskId)

@@ -199,7 +199,7 @@ func (s *SProxy) Run() error {
 		}
 		host := strings.Join(addrParts[:len(addrParts)-1], ":")
 
-		// Forward traffic that pattern matches in http.DefaultServeMux
+		//
 		apif := servemux.NewFilter(mux)
 		apif.SetRequestModifier(mapi.NewForwarder(host, port))
 		topg.AddRequestModifier(apif)

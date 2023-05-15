@@ -142,7 +142,6 @@ func (parser *Parser) HttpParser(body *string) bool {
 					parser.attr = new(Attribute)
 					parser.attr.Key = mkey
 					parser.attr.Val = mval
-
 					Attributes = append(Attributes, parser.attr)
 				} else {
 					mkey := util.Byte2Str(key)

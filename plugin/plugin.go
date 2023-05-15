@@ -220,29 +220,32 @@ func (p *Plugin) Run(args PluginOption) error {
 			ur := urlinters.([]interface{})
 			for _, urlinter := range ur {
 				p.threadwg.Add(1)
-				go func(type_name string, urlinter map[string]interface{}) {
-					n := util.DeepCopyMap(urlinter)
-					//单体封装
-					data := GroupData{
-						GroupType:        type_name,
-						UrlInfo:          n,
-						Spider:           p.Spider,
-						Pctx:             p.Ctx,
-						Pcancel:          p.Cancel,
-						IsSocket:         IsSocket,
-						SocketMsg:        args.SingelMsg,
-						HttpsCert:        args.HttpsCert,
-						HttpsCertKey:     args.HttpsCertKey,
-						Config:           args.Config,
-						Rate:             args.Rate,
-						IsSaveToJsonFile: args.IsSaveToJsonFile,
-						VulnerableMsg:    &VulnerableMsg,
-					}
-					err = p.Pool.Invoke(&data)
-					if err != nil {
-						logger.Debug(err.Error())
-					}
-				}(type_name, urlinter.(map[string]interface{}))
+				if urlinter != nil {
+					go func(type_name string, urlinter map[string]interface{}) {
+						n := util.DeepCopyMap(urlinter)
+						//单体封装
+						data := GroupData{
+							GroupType:        type_name,
+							UrlInfo:          n,
+							Spider:           p.Spider,
+							Pctx:             p.Ctx,
+							Pcancel:          p.Cancel,
+							IsSocket:         IsSocket,
+							SocketMsg:        args.SingelMsg,
+							HttpsCert:        args.HttpsCert,
+							HttpsCertKey:     args.HttpsCertKey,
+							Config:           args.Config,
+							Rate:             args.Rate,
+							IsSaveToJsonFile: args.IsSaveToJsonFile,
+							VulnerableMsg:    &VulnerableMsg,
+						}
+						err = p.Pool.Invoke(&data)
+						if err != nil {
+							logger.Debug(err.Error())
+						}
+					}(type_name, urlinter.(map[string]interface{}))
+				}
+
 			}
 		}
 		//这里发送文件
