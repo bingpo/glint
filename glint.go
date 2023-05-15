@@ -45,6 +45,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -65,7 +66,7 @@ import (
 
 /*
  */
-var DefaultPlugins = cli.NewStringSlice("xss", "cmdinject", "jsonp", "xxe", "crlf", "cors", "sql",
+var DefaultPlugins = cli.NewStringSlice("xss", "cmdinject", "jsonp", "xxe", "crlf", "csrf", "cors", "sql",
 	"apperror", "dir_coss",
 	"tls", "fileinclude", "ssrf", "upfile", "csp", "textmatch", "weakattack", "bigpwdattack", "php_deserialization",
 	"cookie", "hsts", "xFrameopt") //"ssrf","csrf",  "weakattack", ,
@@ -1187,6 +1188,66 @@ func (t *Task) SaveQuitTimeToDB() {
 	t.Dm.SaveQuitTime(t.TaskId, t.EndTime, over_time)
 }
 
+func (t *Task) startproxyscan(
+	args *proxy.PassiveProxy,
+	AllowDomains reflect.Value,
+	ForbiddenDomains reflect.Value,
+	sdint int,
+) {
+	var recordurls []string
+
+	for {
+		UrlElement := <-args.CommunicationSingleton
+		if value, ok := UrlElement["IsPauseScan"].(bool); ok {
+			plugin.IsPauseScan = value
+		} else if urlinfo, ok := UrlElement["agent"].([]interface{}); ok {
+			var iscontinue = false
+			for _, e := range urlinfo {
+				//处理允许与不允许的域名
+				em := e.(map[string]interface{})
+				//AllowDomains
+				ADs := strings.Split(AllowDomains.String(), "|")
+				for _, v := range ADs {
+					if !funk.Contains(em["url"], v) {
+						iscontinue = true
+						continue
+					}
+				}
+				//ForbiddenDomain
+				fds := strings.Split(ForbiddenDomains.String(), "|")
+				for _, v := range fds {
+					if funk.Contains(em["url"], v) {
+						iscontinue = true
+						continue
+					}
+				}
+
+				//处理扫描深度，超过的跳出
+				if util.GetScanDeepByUrl(em["url"].(string)) >= sdint {
+					iscontinue = true
+					continue
+				}
+
+				//扫描过一次就不扫描了
+				if funk.Contains(recordurls, em["url"].(string)) {
+					iscontinue = true
+					continue
+				} else {
+					recordurls = append(recordurls, em["url"].(string))
+				}
+
+			}
+			if iscontinue {
+				continue
+			}
+			t.TaskConfig.JsonOrYaml = false
+
+			t.EnablePluginsALLURL(UrlElement, args.HttpsCert, args.HttpsCertKey, true, config.UnconfirmSocket)
+		}
+
+	}
+}
+
 func (t *Task) agentPluginRun(args *proxy.PassiveProxy) {
 
 	AllowDomains, err := t.TaskConfig.GetValue("allow_domain")
@@ -1213,51 +1274,7 @@ func (t *Task) agentPluginRun(args *proxy.PassiveProxy) {
 	}()
 
 	if args != nil {
-		go func() {
-			for {
-
-				UrlElement := <-args.CommunicationSingleton
-
-				if value, ok := UrlElement["IsPauseScan"].(bool); ok {
-					plugin.IsPauseScan = value
-				} else if urlinfo, ok := UrlElement["agent"].([]interface{}); ok {
-					var iscontinue = false
-					for _, e := range urlinfo {
-						//处理允许与不允许的域名
-						em := e.(map[string]interface{})
-						//AllowDomains
-						ADs := strings.Split(AllowDomains.String(), "|")
-						for _, v := range ADs {
-							if !funk.Contains(em["url"], v) {
-								iscontinue = true
-								continue
-							}
-						}
-						//ForbiddenDomain
-						fds := strings.Split(ForbiddenDomains.String(), "|")
-						for _, v := range fds {
-							if funk.Contains(em["url"], v) {
-								iscontinue = true
-								continue
-							}
-						}
-
-						//处理扫描深度，超过的跳出
-						if util.GetScanDeepByUrl(em["url"].(string)) >= sdint {
-							iscontinue = true
-							continue
-						}
-					}
-					if iscontinue {
-						continue
-					}
-					t.TaskConfig.JsonOrYaml = false
-
-					t.EnablePluginsALLURL(UrlElement, args.HttpsCert, args.HttpsCertKey, true, config.UnconfirmSocket)
-				}
-
-			}
-		}()
+		go t.startproxyscan(args, AllowDomains, ForbiddenDomains, sdint)
 	}
 
 }

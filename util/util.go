@@ -462,7 +462,7 @@ func (p Variations) Set(key string, value string) error {
 	return fmt.Errorf("not found: %s", key)
 }
 
-const MAX_SEND_COUNT = 10
+const MAX_SEND_COUNT = 20
 
 func (p *Variations) SetPayloads(uri string, payload string, method string) []string {
 	var result []string
@@ -625,7 +625,7 @@ func ParseUri(uri string, body []byte, method string, content_type string, heade
 		if len(body) > 0 {
 			switch getContentType(strings.ToLower(content_type)) {
 			case application_json:
-				fmt.Println(string(body))
+				//fmt.Println(string(body))
 				err := json.Unmarshal(body, &json_map)
 				if err != nil {
 					return nil, err
@@ -952,14 +952,14 @@ func GenerateVlockFile(Auth_time uint) error {
 	info, _ := cpu.Info()
 	PhysicalID := info[0].PhysicalID
 
-	fmt.Println(PhysicalID)
+	//fmt.Println(PhysicalID)
 	starttime := time.Now().Local()
 	startclock := starttime.Format("2006-01-02")
 	Endtime := starttime.Add(time.Hour * 24 * time.Duration(Auth_time))
 	endclock := Endtime.Format("2006-01-02")
 	// time.Now().Local().Add(time.)
-	fmt.Println(startclock)
-	fmt.Println(endclock)
+	//fmt.Println(startclock)
+	//fmt.Println(endclock)
 	sha1str := PhysicalID + startclock + endclock
 	Sha1Inst := sha1.New()
 	Sha1Inst.Write([]byte(sha1str))
@@ -1020,11 +1020,11 @@ func getFormData(form *multipart.Form) {
 
 		for i := 0; i < len(v); i++ {
 
-			fmt.Println("file part ", i, "-->")
+			// fmt.Println("file part ", i, "-->")
 
-			fmt.Println("fileName   :", v[i].Filename)
+			// fmt.Println("fileName   :", v[i].Filename)
 
-			fmt.Println("part-header:", v[i].Header)
+			// fmt.Println("part-header:", v[i].Header)
 
 			f, _ := v[i].Open()
 
@@ -1032,7 +1032,7 @@ func getFormData(form *multipart.Form) {
 
 			fmt.Println("file-content", string(buf))
 
-			fmt.Println()
+			// fmt.Println()
 
 		}
 

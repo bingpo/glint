@@ -10,8 +10,6 @@ import (
 	"glint/util"
 	"strings"
 	"time"
-
-	"github.com/logrusorgru/aurora"
 )
 
 var anti_csrf = []string{
@@ -101,7 +99,7 @@ func Csrfeval(args *plugin.GroupData) (*util.ScanResult, bool, error) {
 		req2, resp2, errs := sess.Post(Param.Url, Param.Headers, []byte(Param.Body))
 		b2 := resp2.Body()
 		if len(b1) == len(b2) {
-			fmt.Println(aurora.Red("Heuristics reveal endpoint might be VULNERABLE to Origin Base CSRFs..."))
+			//fmt.Println(aurora.Red("Heuristics reveal endpoint might be VULNERABLE to Origin Base CSRFs..."))
 			Result := util.VulnerableTcpOrUdpResult(Param.Url,
 				"csrf Origin Vulnerable",
 				[]string{string(req2.String())},

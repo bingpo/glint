@@ -342,7 +342,7 @@ func (spider *Spider) Init(TaskConfig config.TaskConfig) error {
 	// 	spider.TabTimeOut = int64(iVal.(time.Duration) * time.Second)
 	// }
 
-	spider.TabTimeOut = 200
+	spider.TabTimeOut = 30
 
 	if spider.Ratelimite == nil {
 		spider.Ratelimite = &util.Rate{}

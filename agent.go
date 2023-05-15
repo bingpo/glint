@@ -107,6 +107,7 @@ func (s *SProxy) Run() error {
 			InsecureSkipVerify: *skipTLSVerify,
 		},
 	}
+
 	p.SetRoundTripper(tr)
 
 	if *dsProxyURL != "" {

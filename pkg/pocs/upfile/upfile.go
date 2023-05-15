@@ -3,7 +3,6 @@ package upfile
 import (
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"glint/logger"
 	"glint/nenet"
 	"glint/pkg/layers"
@@ -57,7 +56,7 @@ func (uf *classUPFile) TestFileUpload(index int, filename string, contenttype st
 	regexEmails := "([\\.\\w\\/]+\\/)" + strings.Replace(filename, ".", "\\.", -1)
 	re, _ := regexp.Compile(regexEmails)
 	lookfor_filepaths = re.FindAllString(uf.lastJob.Features.Response.String(), -1)
-	fmt.Println(lookfor_filepaths)
+	//fmt.Println(lookfor_filepaths)
 	if len(lookfor_filepaths) != 0 {
 
 	}
@@ -324,7 +323,7 @@ func UpfileVaild(args *plugin.GroupData) (*util.ScanResult, bool, error) {
 	CUPFile.lastJob.Layer.Headers = Param.Headers
 	CUPFile.lastJob.Layer.Body = []byte(Param.Body)
 
-	fmt.Println(variations.Params)
+	//fmt.Println(variations.Params)
 
 	//先搜索回复里面的文件
 	if CUPFile.StartTesting() {

@@ -25,7 +25,7 @@
     },
     "exweb_target_info": [
         {
-            "scan_target": "",
+            "scan_target": "dangdang.com",
             "target_id": 78,
             "target_order": 0,
             "task_id": 40

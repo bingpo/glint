@@ -56,5 +56,5 @@ func Test_jsoncompost(t *testing.T) {
 		payloads = append(payloads, string(binary))
 		newjsonobj[k] = v
 	}
-	fmt.Println(payloads)
+	//fmt.Println(payloads)
 }

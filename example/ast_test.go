@@ -248,7 +248,7 @@ func Test_Functiondiscover(t *testing.T) {
 	var params = []string{}
 	var vardiscover bool
 	o := js.Options{}
-	ast, err := js.Parse(parse.NewInputString(jsbody), o)
+	_, err := js.Parse(parse.NewInputString(jsbody), o)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -259,10 +259,10 @@ func Test_Functiondiscover(t *testing.T) {
 	// 	fmt.Println(v.String())
 	// }
 
-	fmt.Println("Scope:", ast.Scope.String())
-	fmt.Println("Scope Func:", ast.Scope.Func.String())
+	//fmt.Println("Scope:", ast.Scope.String())
+	//fmt.Println("Scope Func:", ast.Scope.Func.String())
 
-	fmt.Println("JS:", ast.String())
+	//fmt.Println("JS:", ast.String())
 	//ast.BlockStmt.String()
 	l := js.NewLexer(parse.NewInputString(jsbody))
 	for {
