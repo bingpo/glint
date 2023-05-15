@@ -307,7 +307,10 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 				}
 			}
 			// Tasks = nil
+		} else {
+			netcomm.Sendmsg(4, "no task", 0)
 		}
+
 		//被动扫描专有指令
 	} else if strings.EqualFold(Status, "PauseScan") && IsStartProxyMode {
 		//设置IsPauseScan全局变量
