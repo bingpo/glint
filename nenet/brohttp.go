@@ -459,7 +459,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 
 	subctx, subcancel := context.WithCancel(*t.Ctx)
 	defer subcancel()
-	tctx, tcancel = context.WithTimeout(subctx, time.Second*3)
+	tctx, tcancel = context.WithTimeout(subctx, time.Second*2)
 	defer tcancel()
 	for {
 		select {
@@ -652,6 +652,7 @@ func (t *Tabs) CheckPayloadLocation(newpayload string, isflag bool) ([]string, s
 			resp_str, req_str, err = t.Send()
 			if err != nil {
 				logger.Warning("xss error %s", err.Error())
+				return nil, "", err
 			}
 			if len(resp_str) != 0 {
 				htmls = append(htmls, resp_str...)

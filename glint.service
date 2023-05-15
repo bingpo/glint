@@ -12,6 +12,9 @@ RemainAfterExit=yes
 PIDFile=/var/run/glint.pid
 ExecStop=/bin/kill -s SIGKILL $MAINPID
 SuccessExitStatus=SIGKILL
+Restart=on-failure
+RestartSec=5s
+
 
 [Install]
 WantedBy=multi-user.target

@@ -452,6 +452,7 @@ func DoCheckXss(
 					response_strarray, requeststr, err := tab.CheckPayloadLocation(payload, false)
 					if err != nil {
 						logger.Error("%s", err.Error())
+						return nil, err
 					}
 					if len(response_strarray) != 0 {
 						occ := xssOcc{Url: urlocc.Request.Url, Reqstr: requeststr, Htmls: response_strarray}
