@@ -308,7 +308,12 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 			}
 			// Tasks = nil
 		} else {
-			netcomm.Sendmsg(4, "no task", 0)
+			uinttask, err := strconv.Atoi(taskid)
+			if err != nil {
+				logger.Error("strconv.Atoi taskid error: %v ", err)
+				return err
+			}
+			netcomm.Sendmsg(4, "no task", uinttask)
 		}
 
 		//被动扫描专有指令

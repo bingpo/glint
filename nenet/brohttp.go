@@ -408,8 +408,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 	t.PackCtx = &ctx
 	t.PackCancel = &cancel
 	t.mu.Unlock()
-	//ctx := t.GetExecutor()
-	// if (*t.TaskCtx).Deadline()
+
 	select {
 	case <-(*t.TaskCtx).Done():
 		//logger.Warning("xss插件收到任务过期,中断发包")
@@ -454,13 +453,14 @@ func (t *Tabs) Send() ([]string, string, error) {
 			logger.Error(err.Error())
 		}
 	}
-	// for
+
 	//tctx, tcancel = context.WithTimeout(*t.Ctx, time.Duration(time.Second*3))
 
 	subctx, subcancel := context.WithCancel(*t.Ctx)
 	defer subcancel()
 	tctx, tcancel = context.WithTimeout(subctx, time.Second*2)
 	defer tcancel()
+
 	for {
 		select {
 		case html := <-t.Source:
