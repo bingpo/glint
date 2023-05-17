@@ -41,6 +41,8 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 	Reponse["status"] = status
 	Reponse["msg"] = message
 	Reponse["taskid"] = strconv.Itoa(taskid)
+	wbi := 0
+
 	// logger.Info("%v", reponse)
 	if ServerType == "websocket" {
 	restart:
@@ -48,10 +50,13 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 			return fmt.Errorf("没有websocket连接上")
 		}
 		for idx, info := range Socketinfo {
-			time.Sleep(time.Second * 1)
+			wbi++
+			if (wbi + 1) == len(Socketinfo) {
+				return nil
+			}
+
 			if _, ok := info.Ctx.Deadline(); ok {
 				Socketinfo = append(Socketinfo[:idx], Socketinfo[(idx+1):]...)
-				time.Sleep(time.Second * 3)
 				goto restart
 			} else {
 				ctx, cancel := context.WithTimeout(info.Ctx, time.Second*3)
@@ -68,19 +73,23 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 		//大端通讯
 		binary.BigEndian.PutUint32(bs, uint32(len(data)))
 		copy(bs[4:], data)
+		si := 0
+		//length = len(SOCKETCONN)
 		// logger.Info("sendmsg: %v", reponse)
 	restart1:
 		if CHECKSOKETTIMES() {
 			return fmt.Errorf("没有socket连接上")
 		}
 		for idx, conn := range SOCKETCONN {
-			time.Sleep(time.Second * 1)
+			si++
+			if (si + 1) == len(SOCKETCONN) {
+				return nil
+			}
 			if err != nil {
 				// logger.Error(err.Error())
 			}
 			if len(data) > 0 {
 				_, err = (*conn).Write(bs)
-				time.Sleep(time.Second * 3)
 				if err != nil {
 					// logger.Error(err.Error())
 					SOCKETCONN = append(SOCKETCONN[:idx], SOCKETCONN[(idx+1):]...)
