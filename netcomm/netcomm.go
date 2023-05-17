@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"glint/logger"
 	"net"
 	"strconv"
 	"sync"
@@ -69,7 +70,7 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 		copy(bs[4:], data)
 		// si := 0
 		//length = len(SOCKETCONN)
-		// logger.Info("sendmsg: %v", reponse)
+		logger.Info("sendmsg: %v", message)
 		for idx, conn := range SOCKETCONN {
 			if CHECKSOKETTIMES() {
 				return fmt.Errorf("没有socket连接上")
