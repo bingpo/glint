@@ -371,7 +371,6 @@ func handleRequest(targeturl string) {
 
 func Test_Name(t *testing.T) {
 	target := `http://xyzwfw.gov.cn/share`
-
 	handleRequest(target)
 }
 

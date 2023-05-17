@@ -43,6 +43,7 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"net/url"
 	"os"
 	"os/signal"
 	"reflect"
@@ -308,6 +309,7 @@ func run(c *cli.Context) error {
 	} else if strings.ToLower(Socket) != "" {
 		SocketHandler()
 	} else if config.PassiveProxy {
+
 		t := Task{TaskId: 9564}
 
 		config := tconfig{}
@@ -1185,13 +1187,18 @@ func (t *Task) SaveQuitTimeToDB() {
 	t.Dm.SaveQuitTime(t.TaskId, t.EndTime, over_time)
 }
 
+type _recordurls struct {
+	extractedURL string
+	keys         string
+}
+
 func (t *Task) startproxyscan(
 	args *proxy.PassiveProxy,
 	AllowDomains reflect.Value,
 	ForbiddenDomains reflect.Value,
 	sdint int,
 ) {
-	var recordurls []string
+	var recordurls []_recordurls
 
 	for {
 		UrlElement := <-args.CommunicationSingleton
@@ -1226,11 +1233,36 @@ func (t *Task) startproxyscan(
 				}
 
 				//扫描过一次就不扫描了
-				if funk.Contains(recordurls, em["url"].(string)) {
-					iscontinue = true
-					continue
+
+				// 解析 URL
+				parsedURL, err := url.Parse(em["url"].(string))
+				if err != nil {
+					fmt.Println("URL 解析错误:", err)
+					return
+				}
+
+				// 获取查询参数
+				queryParams := parsedURL.Query()
+
+				var keys string
+				// 遍历并输出键值对
+				for key, _ := range queryParams {
+					keys = keys + "| " + key
+				}
+
+				extractedURL := fmt.Sprintf("%s://%s%s", parsedURL.Scheme, parsedURL.Host, parsedURL.Path)
+				var Repeat bool
+				for _, ru := range recordurls {
+					if ru.keys == keys && ru.extractedURL == extractedURL {
+						Repeat = true
+						break
+					}
+				}
+
+				if !Repeat {
+					recordurls = append(recordurls, _recordurls{extractedURL: extractedURL, keys: keys})
 				} else {
-					recordurls = append(recordurls, em["url"].(string))
+					continue
 				}
 
 			}

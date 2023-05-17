@@ -1147,7 +1147,6 @@ func (tab *Tab) AddResultUrl(method string, _url string, source string) {
 	Model2url = &model2.URL{URL: *url}
 
 	//过滤URL页面是否存在
-
 	if !util.PageExists(url.String()) {
 		return
 	}
