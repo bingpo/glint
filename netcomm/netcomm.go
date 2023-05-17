@@ -48,9 +48,10 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 			return fmt.Errorf("没有websocket连接上")
 		}
 		for idx, info := range Socketinfo {
-			time.Sleep(time.Second * 3)
+			time.Sleep(time.Second * 1)
 			if _, ok := info.Ctx.Deadline(); ok {
 				Socketinfo = append(Socketinfo[:idx], Socketinfo[(idx+1):]...)
+				time.Sleep(time.Second * 3)
 				goto restart
 			} else {
 				ctx, cancel := context.WithTimeout(info.Ctx, time.Second*3)
@@ -73,12 +74,13 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 			return fmt.Errorf("没有socket连接上")
 		}
 		for idx, conn := range SOCKETCONN {
-			time.Sleep(time.Second * 3)
+			time.Sleep(time.Second * 1)
 			if err != nil {
 				// logger.Error(err.Error())
 			}
 			if len(data) > 0 {
 				_, err = (*conn).Write(bs)
+				time.Sleep(time.Second * 3)
 				if err != nil {
 					// logger.Error(err.Error())
 					SOCKETCONN = append(SOCKETCONN[:idx], SOCKETCONN[(idx+1):]...)
