@@ -70,6 +70,7 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 		copy(bs[4:], data)
 		// si := 0
 		//length = len(SOCKETCONN)
+		var toDelete []int
 		logger.Info("sendmsg: %v", message)
 		for idx, conn := range SOCKETCONN {
 			if CHECKSOKETTIMES() {
@@ -79,11 +80,17 @@ func Sendmsg(status int, message interface{}, taskid int) error {
 				_, err = (*conn).Write(bs)
 				if err != nil {
 					// logger.Error(err.Error())
-					SOCKETCONN = append(SOCKETCONN[:idx], SOCKETCONN[(idx+1):]...)
 					Reponse = make(map[string]interface{}, 1)
 					continue
 				}
 			}
+			// 将要删除的元素的索引添加到临时切片中
+			toDelete = append(toDelete, idx)
+		}
+		// 根据临时切片中的索引删除元素
+		for i := len(toDelete) - 1; i >= 0; i-- {
+			idx := toDelete[i]
+			SOCKETCONN = append(SOCKETCONN[:idx], SOCKETCONN[idx+1:]...)
 		}
 		bs = bs[:0]
 	}
