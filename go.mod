@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/Ullaakut/nmap/v2 v2.2.1
 	github.com/beevik/etree v1.1.0
-	github.com/chromedp/cdproto v0.0.0-20220924210414-0e3390be1777
-	github.com/chromedp/chromedp v0.8.6
+	github.com/chromedp/cdproto v0.0.0-20230512205701-c5692af2b095
+	github.com/chromedp/chromedp v0.9.1
 	github.com/chzyer/readline v1.5.1
 	github.com/deckarep/golang-set v1.8.0
 	github.com/fatih/color v1.13.0
@@ -52,7 +52,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gobwas/ws v1.1.0 // indirect
+	github.com/gobwas/ws v1.2.0 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
@@ -68,7 +68,7 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/grpc v1.53.0
 )

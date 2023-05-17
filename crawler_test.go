@@ -148,6 +148,9 @@ func ExampleAllocSubContextWithTimeOut() {
 		chromedp.Flag("block-new-web-contents", true),
 		chromedp.Flag("blink-settings", "imagesEnabled=false"),
 		// chromedp.Flag("proxy-server", Proxy),
+		// chromedp.ModifyCmdFunc(func(cmd *exec.Cmd) {
+		// 	cmd.SysProcAttr.Pdeathsig = syscall.SIGKILL
+		// }),
 
 		chromedp.UserAgent(`Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36`),
 	}
