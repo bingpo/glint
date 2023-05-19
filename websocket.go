@@ -299,11 +299,9 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 			if len(Tasks) == 0 {
 				if err := util.KillChrome(); err != nil {
 					logger.Error("failed to kill Chrome: ", err)
-					return err
 				}
 				if err := util.KillcustomJS(); err != nil {
 					logger.Error("failed to kill customJS: ", err)
-					return err
 				}
 			}
 			// Tasks = nil

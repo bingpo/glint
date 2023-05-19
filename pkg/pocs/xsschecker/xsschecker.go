@@ -240,11 +240,6 @@ func (g *Generator) GeneratorPayload(Tagmode int, flag string, payloaddata paylo
 						return payload
 					})
 
-					// g.CopyPayLoadtoXSS(payloaddata, "html", func(payload string) string {
-					// 	Rstr := `'">` + payload
-					// 	return Rstr
-					// })
-
 					attibuteoK = true
 				}
 			}

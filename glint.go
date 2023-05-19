@@ -1233,7 +1233,6 @@ func (t *Task) startproxyscan(
 				}
 
 				//扫描过一次就不扫描了
-
 				// 解析 URL
 				parsedURL, err := url.Parse(em["url"].(string))
 				if err != nil {
@@ -1319,11 +1318,11 @@ func removetasks(id int) error {
 		logger.Warning("任务队列为空,清理无法通讯的chrome,这可能会引起其他错误")
 		if err := util.KillChrome(); err != nil {
 			logger.Error("failed to kill Chrome: ", err)
-			return err
+			//return err
 		}
 		if err := util.KillcustomJS(); err != nil {
 			logger.Error("failed to kill customJS: ", err)
-			return err
+			//return err
 		}
 		return nil
 	}
