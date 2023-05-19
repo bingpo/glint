@@ -255,7 +255,7 @@ func (t *Tabs) ListenTarget() {
 				case <-t.stopSourceCh:
 					return
 				case t.Source <- string(array):
-				case <-time.After(10 * time.Second):
+				case <-time.After(5 * time.Second):
 				}
 
 			}(ev)
@@ -303,7 +303,7 @@ func (spider *Spider) Init(TaskConfig config.TaskConfig) error {
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*30)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
 	c, cancel := chromedp.NewExecAllocator(ctx, options...)
 	ctx, cancel = chromedp.NewContext(c) // chromedp.WithDebugf(logger.Info)
 	spider.Cancel = &cancel
@@ -342,7 +342,7 @@ func (spider *Spider) Init(TaskConfig config.TaskConfig) error {
 	// 	spider.TabTimeOut = int64(iVal.(time.Duration) * time.Second)
 	// }
 
-	spider.TabTimeOut = 30
+	spider.TabTimeOut = 20
 
 	if spider.Ratelimite == nil {
 		spider.Ratelimite = &util.Rate{}
@@ -399,9 +399,9 @@ func (t *Tabs) Send() ([]string, string, error) {
 	// time.Sleep(5)
 	ctx, cancel := t.newSpiderTab()
 	// defer cancel()
-	subtabctx, subtabcancel := context.WithCancel(ctx)
-	defer subtabcancel()
-	zzctx, zzcancel := context.WithTimeout(subtabctx, time.Second*20)
+	// subtabctx, subtabcancel := context.WithCancel(ctx)
+	// defer subtabcancel()
+	zzctx, zzcancel := context.WithTimeout(ctx, time.Second*20)
 	defer zzcancel()
 	//ctx, cancel = context.WithTimeout(ctx, time.Second*20)
 	t.mu.Lock()
@@ -458,7 +458,7 @@ func (t *Tabs) Send() ([]string, string, error) {
 
 	subctx, subcancel := context.WithCancel(*t.Ctx)
 	defer subcancel()
-	tctx, tcancel = context.WithTimeout(subctx, time.Second*2)
+	tctx, tcancel = context.WithTimeout(subctx, time.Second*1)
 	defer tcancel()
 
 	for {
