@@ -46,13 +46,14 @@ var PrivateKey string
 var (
 	en = flag.Bool("passiveproxy", true, "start proxy")
 
-	addr    = flag.String("addr", ":8080", "host:port of the proxy")
-	apiAddr = flag.String("api-addr", ":8181", "host:port of the configuration API")
-	tlsAddr = flag.String("tls-addr", ":4443", "host:port of the proxy over TLS")
-	api     = flag.String("api", "martian.proxy", "hostname for the API")
-	//generateCA   = flag.Bool("generate-ca-cert", false, "generate CA certificate and private key for MITM")
-	//cert         = flag.String("cert", "", "filepath to the CA certificate used to sign MITM certificates")
-	//key          = flag.String("key", "", "filepath to the private key of the CA used to sign MITM certificates")
+	addr       = flag.String("addr", ":8080", "host:port of the proxy")
+	apiAddr    = flag.String("api-addr", ":8181", "host:port of the configuration API")
+	tlsAddr    = flag.String("tls-addr", ":4443", "host:port of the proxy over TLS")
+	api        = flag.String("api", "martian.proxy", "hostname for the API")
+	generateCA = flag.Bool("generate-ca-cert", false, "generate CA certificate and private key for MITM")
+	// cert = flag.String("cert", "", "filepath to the CA certificate used to sign MITM certificates")
+	// key  = flag.String("key", "", "filepath to the private key of the CA used to sign MITM certificates")
+
 	organization = flag.String("organization", "Martian Proxy", "organization name for MITM certificates")
 	validity     = flag.Duration("validity", time.Hour, "window of time that MITM certificates are valid")
 	allowCORS    = flag.Bool("cors", false, "allow CORS requests to configure the proxy")
@@ -125,7 +126,7 @@ func (s *SProxy) Run() error {
 
 	if GenerateCA {
 		var err error
-		x509c, priv, err = mitm.NewAuthority("martian.proxy", "Martian Authority", 365*24*time.Hour)
+		x509c, priv, err = mitm.NewAuthority("martian.proxy", "Martian Authority", 9999*24*time.Hour)
 		if err != nil {
 			log.Fatal(err)
 		}
