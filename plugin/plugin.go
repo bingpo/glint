@@ -322,21 +322,23 @@ func (p *Plugin) Run(args PluginOption) error {
 						Resp = vuln.RespMsg[0]
 					}
 
-					Result_id, err = p.Dm.SaveScanResult(
-						p.Taskid,
-						PluginId,
-						vuln.Vulnerable,
-						vuln.Target,
-						// s.Output,1
-						base64.StdEncoding.EncodeToString([]byte(ReqMsg)),
-						base64.StdEncoding.EncodeToString([]byte(Resp)),
-						int(vuln.Hostid),
-					)
-
-					if err != nil {
-						logger.Error("plugin::error %s", err.Error())
-						return
+					if p != nil && vuln != nil {
+						Result_id, err = p.Dm.SaveScanResult(
+							p.Taskid,
+							PluginId,
+							vuln.Vulnerable,
+							vuln.Target,
+							// s.Output,1
+							base64.StdEncoding.EncodeToString([]byte(ReqMsg)),
+							base64.StdEncoding.EncodeToString([]byte(Resp)),
+							int(vuln.Hostid),
+						)
+						if err != nil {
+							logger.Error("plugin::error %s", err.Error())
+							return
+						}
 					}
+
 				}
 				//}
 
