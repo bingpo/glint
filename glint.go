@@ -611,7 +611,7 @@ func (t *Task) RunCustomJS(
 	}()
 
 	urlslengths := getLength(originUrls)
-	filelengths := 1
+	filelengths := len(*FileList)
 	length := urlslengths + filelengths
 	//传递url
 	sendRequests(stream, originUrls, length)
