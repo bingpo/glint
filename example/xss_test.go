@@ -34,7 +34,7 @@ func TestXSS(t *testing.T) {
 
 	var TaskConfig config.TaskConfig
 	TaskYamlConfig := config.TaskYamlConfig{}
-	TaskYamlConfig.Proxy = "127.0.0.1:7777"
+	TaskYamlConfig.Proxy = ""
 	TaskYamlConfig.NoHeadless = false
 	TaskYamlConfig.TabRunTimeout = 1000 * time.Second
 	TaskYamlConfig.ScanDepth = 10

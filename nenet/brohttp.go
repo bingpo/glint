@@ -255,7 +255,7 @@ func (t *Tabs) ListenTarget() {
 				case <-t.stopSourceCh:
 					return
 				case t.Source <- string(array):
-				case <-time.After(10 * time.Second):
+				case <-time.After(5 * time.Second):
 				}
 
 			}(ev)
