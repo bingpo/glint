@@ -3,6 +3,7 @@ package cors
 import (
 	"bufio"
 	"errors"
+	"glint/logger"
 	"glint/nenet"
 	"glint/pkg/layers"
 	"glint/plugin"
@@ -51,10 +52,11 @@ func origin_accepted(Param layers.PluginParam, baseorigin string) (bool, *fastht
 			Cert:          Param.Cert,
 			PrivateKey:    Param.CertKey,
 		})
-	headers := make(map[string]string)
-	headers["Origin"] = Origin
-	req1, resp1, errs := sess.Get(Param.Url, Param.Headers)
+	//headers := make(map[string]string)
+	headers := Param.Headers
+	req1, resp1, errs := sess.Get(Param.Url, headers)
 	if errs != nil {
+		logger.Error("error %v", errs.Error())
 		return false, nil, nil, errs
 	}
 
@@ -116,8 +118,7 @@ func Cors_Valid(args *plugin.GroupData) (*util.ScanResult, bool, error) {
 	baseOrigin := u.Scheme + "://" + u.Hostname()
 	hostname := u.Hostname()
 	baseHost := u.Host
-	if ok, _, _, _ := origin_accepted(Param, baseOrigin); ok ||
-		cors_header_in_response(Param.Headers) {
+	if ok, _, _, _ := origin_accepted(Param, baseOrigin); ok {
 		CorsPayloads := []cors_payload{
 			// reflected origin
 			{
