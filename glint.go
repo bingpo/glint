@@ -510,13 +510,13 @@ func sendRequestList(stream pb.RouteGuide_RouteChatClient, valueList []interface
 			value["targetLength"] = length
 			m, err := structpb.NewValue(value)
 			if err != nil {
-				logger.Error("client.RouteChat NewValue m failed: %v", err)
+				logger.Error("client.sendRequestList NewValue m failed: %v", err)
 				continue
 			}
 
 			data := pb.JsonRequest{Details: m.GetStructValue()}
 			if err := stream.Send(&data); err != nil {
-				logger.Error("client.RouteChat JsonRequest failed: %v", err)
+				logger.Error("client.sendRequestList JsonRequest failed: %v", err)
 			}
 		}
 	}
@@ -625,13 +625,13 @@ func (t *Task) RunCustomJS(
 			"Hash":         Files.FileInfo.Hash,
 			"FileContent":  Files.FileInfo.Filecontent,
 			"isFile":       true,
-			"taskid":       1,
+			"taskid":       t.TaskId,
 			"hostid":       Files.hostid,
 			"targetLength": length,
 		})
 		data := pb.JsonRequest{Details: m.GetStructValue()}
 		if err := stream.Send(&data); err != nil {
-			logger.Error("client.RouteChat JsonRequest failed: %v", err)
+			logger.Error("client.RouteChat FileList JsonRequest failed: %v", err)
 		}
 	}
 
