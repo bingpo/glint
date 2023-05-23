@@ -164,25 +164,12 @@ func (t *Tabs) ListenTarget() {
 		switch ev := ev.(type) {
 		case *page.EventLoadEventFired:
 		case *runtime.EventConsoleAPICalled:
-			// Responses := []map[string]string{}
-			// logger.Debug("* console.%s call:\n", ev.Type)
 			for _, arg := range ev.Args {
-				//fmt.Printf("%s - %s\n", arg.Type, string(arg.Value))
 				ConsoleAPIResponse[string(ev.Type)] = strings.ReplaceAll(string(arg.Value), "\"", "")
 			}
 			go func() {
 				select {
 				case t.ConsoleAPIResponses <- ConsoleAPIResponse:
-
-				case <-t.stopConsoleAPI:
-					_, ok := <-t.ConsoleAPIResponses
-					if !ok {
-						//fmt.Println("channel is closed")
-						return
-					} else {
-						close(t.ConsoleAPIResponses)
-					}
-					return
 				case <-time.After(5 * time.Second):
 					return
 				}
