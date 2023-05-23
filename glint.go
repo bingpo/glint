@@ -620,10 +620,10 @@ func (t *Task) RunCustomJS(
 	//传递文件链接内容等信息到自定义js
 	for _, Files := range *FileList {
 		m, _ := structpb.NewValue(map[string]interface{}{
-			"url":          Files.FileInfo.Uri,
-			"FileName":     Files.FileInfo.Filename,
-			"Hash":         Files.FileInfo.Hash,
-			"FileContent":  "",
+			"url":      Files.FileInfo.Url,
+			"FileName": Files.FileInfo.Filename,
+			//"Hash":         Files.FileInfo.Hash,
+			"FileContent":  "111",
 			"isFile":       true,
 			"taskid":       t.TaskId,
 			"hostid":       Files.hostid,

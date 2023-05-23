@@ -53,7 +53,7 @@ var IsSetup bool
 
 type SiteFile struct {
 	Filename    string
-	Uri         string
+	Url         string
 	Hash        string
 	Filecontent []byte
 	Synhash     string
@@ -1228,7 +1228,7 @@ func ParseJSFile(url string) (*SiteFile, error) {
 	// 创建FileType结构体实例并返回
 	fileType := &SiteFile{
 		Filename:    filepath.Base(jsUrl),
-		Uri:         jsUrl,
+		Url:         jsUrl,
 		Hash:        hashStr,
 		Filecontent: jsContent,
 		// Synhash:     synhashStr,
