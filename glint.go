@@ -625,7 +625,7 @@ func (t *Task) RunCustomJS(
 			//"Hash":         Files.FileInfo.Hash,
 			"FileContent":  "111",
 			"isFile":       true,
-			"taskid":       t.TaskId,
+			"taskid":       1, //t.TaskId
 			"hostid":       Files.hostid,
 			"targetLength": length,
 		})
@@ -639,7 +639,7 @@ func (t *Task) RunCustomJS(
 	select {
 	case <-waitc:
 		fmt.Println("任务完成！")
-	case <-time.After(1 * time.Hour):
+	case <-time.After(30 * time.Minute):
 		fmt.Println("超时了！")
 	}
 
