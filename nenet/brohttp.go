@@ -183,9 +183,9 @@ func (t *Tabs) ListenTarget() {
 						close(t.ConsoleAPIResponses)
 					}
 					return
+				case <-time.After(5 * time.Second):
+					return
 				}
-
-				// defer delete
 			}()
 
 		case *runtime.EventExceptionThrown:

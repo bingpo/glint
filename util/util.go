@@ -938,7 +938,7 @@ func ConfirmVlockFile(lockPath string) (bool, error) {
 	//fmt.Printf("%x\n\n", truehash)
 	validhashstr, err := base64.StdEncoding.DecodeString(vcl.Hash)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return false, err
 	}
 	if bytes.Equal(truehash, validhashstr) {
