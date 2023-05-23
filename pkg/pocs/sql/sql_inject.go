@@ -1,6 +1,7 @@
 package sql
 
 import (
+	"context"
 	"errors"
 	"glint/logger"
 	"glint/nenet"
@@ -77,6 +78,7 @@ type TimeoutResult struct {
 }
 
 type classBlindSQLInj struct {
+	TaskCtx                       *context.Context
 	scheme                        string
 	TargetUrl                     string
 	inputIndex                    int
@@ -1187,6 +1189,14 @@ func (bsql *classBlindSQLInj) genBenchmarkSleepString(sleepType string) string {
 
 func (bsql *classBlindSQLInj) testTiming(varIndex int, paramValue string) bool {
 	// load scheme variation
+	if *bsql.TaskCtx != nil {
+		select {
+		case <-(*bsql.TaskCtx).Done():
+			return false
+		default:
+		}
+	}
+
 	origParamValue := paramValue
 	// var confirmed = false
 	var Time1 = 0. // long
@@ -1805,6 +1815,13 @@ func (bsql *classBlindSQLInj) startTesting() bool {
 				// if bsql.inputIsStable {
 				// 	prioDBMS = calcDMBSPriorities()
 				// }
+				if *bsql.TaskCtx != nil {
+					select {
+					case <-(*bsql.TaskCtx).Done():
+						return false
+					default:
+					}
+				}
 
 				if doTimingTestsMySQL {
 					logger.Debug("doTimingTestsMySQL")
@@ -1925,6 +1942,8 @@ func Sql_inject_Vaild(args *plugin.GroupData) (*util.ScanResult, bool, error) {
 	BlindSQL.lastJob.Layer.ContentType = Param.ContentType
 	BlindSQL.lastJob.Layer.Headers = Param.Headers
 	BlindSQL.lastJob.Layer.Body = []byte(Param.Body)
+	BlindSQL.TaskCtx = args.Pctx
+
 	defer BlindSQL.ClearFeature()
 
 	// defer BlindSQL.ClearData()

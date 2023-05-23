@@ -122,7 +122,7 @@ type GroupData struct {
 	UrlInfo          map[string]interface{}
 	GroupUrls        []interface{}
 	Spider           *nenet.Spider
-	Pctx             *context.Context //xss任务
+	Pctx             *context.Context //
 	Pcancel          *context.CancelFunc
 	IsSocket         bool
 	IsSaveToJsonFile bool
