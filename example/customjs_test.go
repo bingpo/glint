@@ -253,11 +253,11 @@ func Test_customjs_file(t *testing.T) {
 		{taskid: 1,
 			hostid: 1997,
 			FileInfo: util.SiteFile{Filename: "jquery-1.12.min.js",
-				Uri: "http://xyzwfw.gov.cn/zwdt/xyzwdt/pages/gjjseach/js/jquery-1.12.min.js", Filecontent: body}}}
+				Url: "http://xyzwfw.gov.cn/zwdt/xyzwdt/pages/gjjseach/js/jquery-1.12.min.js", Filecontent: body}}}
 
 	for _, Files := range FileList {
 		m, _ := structpb.NewValue(map[string]interface{}{
-			"url":          Files.FileInfo.Uri,
+			"url":          Files.FileInfo.Url,
 			"FileName":     Files.FileInfo.Filename,
 			"Hash":         Files.FileInfo.Hash,
 			"FileContent":  Files.FileInfo.Filecontent,
