@@ -164,28 +164,15 @@ func (t *Tabs) ListenTarget() {
 		switch ev := ev.(type) {
 		case *page.EventLoadEventFired:
 		case *runtime.EventConsoleAPICalled:
-			// Responses := []map[string]string{}
-			// logger.Debug("* console.%s call:\n", ev.Type)
 			for _, arg := range ev.Args {
-				//fmt.Printf("%s - %s\n", arg.Type, string(arg.Value))
 				ConsoleAPIResponse[string(ev.Type)] = strings.ReplaceAll(string(arg.Value), "\"", "")
 			}
 			go func() {
 				select {
 				case t.ConsoleAPIResponses <- ConsoleAPIResponse:
-
-				case <-t.stopConsoleAPI:
-					_, ok := <-t.ConsoleAPIResponses
-					if !ok {
-						//fmt.Println("channel is closed")
-						return
-					} else {
-						close(t.ConsoleAPIResponses)
-					}
+				case <-time.After(5 * time.Second):
 					return
 				}
-
-				// defer delete
 			}()
 
 		case *runtime.EventExceptionThrown:
@@ -255,7 +242,7 @@ func (t *Tabs) ListenTarget() {
 				case <-t.stopSourceCh:
 					return
 				case t.Source <- string(array):
-				case <-time.After(10 * time.Second):
+				case <-time.After(5 * time.Second):
 				}
 
 			}(ev)
@@ -398,7 +385,8 @@ func (t *Tabs) Send() ([]string, string, error) {
 	t.stopSourceCh = make(chan struct{})
 	// time.Sleep(5)
 	ctx, cancel := t.newSpiderTab()
-	// defer cancel()
+	//ctx, cancel = context.WithTimeout(ctx, time.Minute*5)
+	defer cancel()
 	subtabctx, subtabcancel := context.WithCancel(ctx)
 	defer subtabcancel()
 	zzctx, zzcancel := context.WithTimeout(subtabctx, time.Second*20)

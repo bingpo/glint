@@ -4,7 +4,6 @@ import (
 	"glint/logger"
 	"glint/pkg/layers"
 	"glint/util"
-	"log"
 	"net/url"
 	"regexp"
 	"strings"
@@ -141,7 +140,7 @@ func originalValueIsInteresting(origValue string) bool {
 	// the original value is an url, run all tests
 	decodedValue, err := url.QueryUnescape(origValue)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
 		return false
 	}
 	if strings.Index(decodedValue, ":/") != -1 {
@@ -171,7 +170,7 @@ func (c *classDirectoryTraversal) shouldRunAllTests(index int, origValue string)
 	// var origValueDecoded = url2plain(origValue)
 	origValueDecoded, err := url.QueryUnescape(origValue)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
 		return false
 	}
 	// prepare alternative values

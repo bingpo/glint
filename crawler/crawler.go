@@ -1199,7 +1199,7 @@ func (tab *Tab) AddResultJsRequest(File util.SiteFile) {
 			return
 		}
 	}
-	logger.Info("添加站点文件:%s", File.Uri)
+	logger.Info("添加站点文件:%s", File.Url)
 	(*tab.WebSiteFileList) = append(*tab.WebSiteFileList, File)
 }
 

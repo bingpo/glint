@@ -510,13 +510,13 @@ func sendRequestList(stream pb.RouteGuide_RouteChatClient, valueList []interface
 			value["targetLength"] = length
 			m, err := structpb.NewValue(value)
 			if err != nil {
-				logger.Error("client.RouteChat NewValue m failed: %v", err)
+				logger.Error("client.sendRequestList NewValue m failed: %v", err)
 				continue
 			}
 
 			data := pb.JsonRequest{Details: m.GetStructValue()}
 			if err := stream.Send(&data); err != nil {
-				logger.Error("client.RouteChat JsonRequest failed: %v", err)
+				logger.Error("client.sendRequestList JsonRequest failed: %v", err)
 			}
 		}
 	}
@@ -556,22 +556,6 @@ func (t *Task) RunCustomJS(
 
 	waitc := make(chan struct{})
 
-	// go func() {
-	// 	select {
-	// 	case <-(*t.Ctx).Done():
-	// 		_, ok := <-waitc
-	// 		if !ok {
-	// 			// channel 已经被关闭
-	// 			return
-	// 		} else {
-	// 			stream.CloseSend()
-	// 			close(waitc)
-	// 		}
-	// 		return
-	// 	default:
-	// 	}
-	// }()
-
 	go func() {
 		for {
 			in, err := stream.Recv()
@@ -588,6 +572,7 @@ func (t *Task) RunCustomJS(
 			if in.Report == nil {
 				continue
 			}
+
 			if _, ok := in.GetReport().Fields["vuln"]; ok {
 				PluginId := in.GetReport().Fields["vuln"].GetStringValue()
 				__url := in.GetReport().Fields["url"].GetStringValue()
@@ -626,32 +611,35 @@ func (t *Task) RunCustomJS(
 		}
 	}()
 
-	length := getLength(originUrls)
+	urlslengths := getLength(originUrls)
+	filelengths := len(*FileList)
+	length := urlslengths + filelengths
 	//传递url
 	sendRequests(stream, originUrls, length)
-
+	//Files.FileInfo.Filecontent
 	//传递文件链接内容等信息到自定义js
-	// for _, Files := range *FileList {
-	// 	m, _ := structpb.NewValue(map[string]interface{}{
-	// 		"Uri":         Files.FileInfo.Uri,
-	// 		"FileName":    Files.FileInfo.Filename,
-	// 		"Hash":        Files.FileInfo.Hash,
-	// 		"FileContent": Files.FileInfo.Filecontent,
-	// 		"isFile":      true,
-	// 		"taskid":      t.TaskId,
-	// 		"hostid":      Files.hostid,
-	// 	})
-	// 	data := pb.JsonRequest{Details: m.GetStructValue()}
-	// 	if err := stream.Send(&data); err != nil {
-	// 		logger.Error("client.RouteChat JsonRequest failed: %v", err)
-	// 	}
-	// }
+	for _, Files := range *FileList {
+		m, _ := structpb.NewValue(map[string]interface{}{
+			"url":      Files.FileInfo.Url,
+			"FileName": Files.FileInfo.Filename,
+			//"Hash":         Files.FileInfo.Hash,
+			"FileContent":  "111",
+			"isFile":       true,
+			"taskid":       1, //t.TaskId
+			"hostid":       Files.hostid,
+			"targetLength": length,
+		})
+		data := pb.JsonRequest{Details: m.GetStructValue()}
+		if err := stream.Send(&data); err != nil {
+			logger.Error("client.RouteChat FileList JsonRequest failed: %v", err)
+		}
+	}
 
 	// 等待任务完成或超时
 	select {
 	case <-waitc:
 		fmt.Println("任务完成！")
-	case <-time.After(1 * time.Hour):
+	case <-time.After(30 * time.Minute):
 		fmt.Println("超时了！")
 	}
 

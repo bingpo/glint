@@ -53,7 +53,7 @@ var IsSetup bool
 
 type SiteFile struct {
 	Filename    string
-	Uri         string
+	Url         string
 	Hash        string
 	Filecontent []byte
 	Synhash     string
@@ -938,7 +938,7 @@ func ConfirmVlockFile(lockPath string) (bool, error) {
 	//fmt.Printf("%x\n\n", truehash)
 	validhashstr, err := base64.StdEncoding.DecodeString(vcl.Hash)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return false, err
 	}
 	if bytes.Equal(truehash, validhashstr) {
@@ -1228,7 +1228,7 @@ func ParseJSFile(url string) (*SiteFile, error) {
 	// 创建FileType结构体实例并返回
 	fileType := &SiteFile{
 		Filename:    filepath.Base(jsUrl),
-		Uri:         jsUrl,
+		Url:         jsUrl,
 		Hash:        hashStr,
 		Filecontent: jsContent,
 		// Synhash:     synhashStr,

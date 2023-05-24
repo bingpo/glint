@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"sync"
 
@@ -169,7 +168,7 @@ func (ji *JSONKeyValueIterator) setValues(data interface{}, WheretoValue int, va
 
 			if sub1 != reflect.Slice {
 				//ji.index++
-				fmt.Printf("key:%s\n", key.String())
+				//fmt.Printf("key:%s\n", key.String())
 				if ji.storeSort[WheretoValue].dimension == dimension &&
 					ji.storeSort[WheretoValue].key == key.String() &&
 					ji.storeSort[WheretoValue].keyindex == keyindex {

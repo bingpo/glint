@@ -376,6 +376,8 @@ func UnzipResponseBody(response *fasthttp.Response) ([]byte, error) {
 		body, err = response.BodyGunzip()
 	case "deflate":
 		body, err = response.BodyInflate()
+	case "br":
+		body, err = response.BodyUnbrotli()
 	default:
 		body, err = []byte{}, fmt.Errorf("unsupported Content-Encoding: %v", contentEncoding)
 	}

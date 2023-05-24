@@ -3,7 +3,6 @@ package crawler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"glint/config"
 	"glint/logger"
 	"glint/model"
@@ -217,7 +216,7 @@ func (c *CrawlerTask) Waitforsingle() {
 单个运行的tab标签任务，实现了workpool的接口
 */
 func (t *tabTask) Task() {
-	fmt.Printf("开始扫描网站:%s", (*t).req.URL.String())
+	//fmt.Printf("开始扫描网站:%s", (*t).req.URL.String())
 	defer t.crawlerTask.taskWG.Done()
 	config := TabConfig{
 		TabRunTimeout:           t.crawlerTask.Config.TabRunTimeout,

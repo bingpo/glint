@@ -313,7 +313,31 @@ func (ts *TaskServer) Task(ctx context.Context, mjson map[string]interface{}) er
 			}
 			netcomm.Sendmsg(4, "no task", uinttask)
 		}
+		//被动扫描专有指令
+	} else if strings.ToLower(Status) == "status" && !IsStartProxyMode {
 
+		if len(Tasks) != 0 {
+			IsRunning := false
+			for _, task := range Tasks {
+				uinttask, _ := strconv.Atoi(taskid)
+				if task.TaskId == uinttask {
+					netcomm.Sendmsg(7, "running", uinttask)
+					IsRunning = true
+				}
+			}
+			if !IsRunning {
+				msg := fmt.Sprintf("ths task: %s is not running ", taskid)
+				uinttask, _ := strconv.Atoi(taskid)
+				netcomm.Sendmsg(4, msg, uinttask)
+			}
+		} else {
+			uinttask, err := strconv.Atoi(taskid)
+			if err != nil {
+				logger.Error("strconv.Atoi taskid error: %v ", err)
+				return err
+			}
+			netcomm.Sendmsg(4, "no task", uinttask)
+		}
 		//被动扫描专有指令
 	} else if strings.EqualFold(Status, "PauseScan") && IsStartProxyMode {
 		//设置IsPauseScan全局变量

@@ -32,7 +32,7 @@ func TestCORS(t *testing.T) {
 	TaskConfig.JsonOrYaml = true
 
 	var PluginWg sync.WaitGroup
-	data, _ := config.ReadResultConf("./json_testfile/CORS_bilibili.json")
+	data, _ := config.ReadResultConf("../json_testfile/cors_test1.json")
 	myfunc := []plugin.PluginCallback{}
 	myfunc = append(myfunc, cors.Cors_Valid)
 

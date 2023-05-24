@@ -43,6 +43,7 @@ func JSRPC(urlinfo map[string]interface{}) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
+	//test3 test1
 	stream, err := client.RouteChat(ctx)
 	if err != nil {
 		logger.Error("%s", err.Error())
@@ -66,11 +67,10 @@ func JSRPC(urlinfo map[string]interface{}) {
 	}()
 
 	data := pb.JsonRequest{Details: m.GetStructValue()}
-	//for _, note := range notes {
+
 	if err := stream.Send(&data); err != nil {
 		log.Fatalf("client.RouteChat: stream.Send(%v) failed: %v", data, err)
 	}
-	//}
 
 	stream.CloseSend()
 	<-waitc
