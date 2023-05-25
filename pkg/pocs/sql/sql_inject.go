@@ -1357,7 +1357,7 @@ func (bsql *classBlindSQLInj) testTiming(varIndex int, paramValue string) bool {
 	//因为我的插件没有这种结构我才去第一种方案
 	var permutation = "v" + permutations[len(permutations)-1] + "zl"
 
-	logger.Info("the permutation is: %d  for sql timing verification ", permutation)
+	//logger.Info("the permutation is: %d  for sql timing verification ", permutation)
 
 	for _, v := range permutation {
 		switch v {
