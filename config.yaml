@@ -24,4 +24,4 @@ Proxy: ""
 
 scan_depth: 10
 max_redirect_times: 5
-Qps: 60000
+Qps: 20

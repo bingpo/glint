@@ -639,7 +639,7 @@ func (t *Task) RunCustomJS(
 	select {
 	case <-waitc:
 		fmt.Println("任务完成！")
-	case <-time.After(30 * time.Minute):
+	case <-time.After(60 * time.Minute):
 		fmt.Println("超时了！")
 	}
 

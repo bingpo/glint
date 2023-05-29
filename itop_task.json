@@ -21,7 +21,31 @@
         "task_id": 40,
         "tcp_conn_timeout": 3,
         "user_agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
-        "web_param_id": 31
+        "web_param_id": 31,
+        "add_plugin": [
+            "xss",
+            "cmdinject",
+            "jsonp",
+            "xxe",
+            "crlf",
+            "csrf",
+            "cors",
+            "sql",
+            "apperror",
+            "dir_coss",
+            "tls",
+            "fileinclude",
+            "ssrf",
+            "upfile",
+            "csp",
+            "textmatch",
+            "weakattack",
+            "bigpwdattack",
+            "php_deserialization",
+            "cookie",
+            "hsts",
+            "xFrameopt"
+        ]
     },
     "exweb_target_info": [
         {
