@@ -28,8 +28,10 @@ cp ./server.key $bindir
 cp ./server.pem $bindir
 cp ./glint.service $bindir
 
+systemctl stop glint
 
-mv $bindir/glint $installDir
+chmod +x $bindir/glint
+cp $bindir/glint $installDir
 
 chmod +x $bindir/glint.service
 
