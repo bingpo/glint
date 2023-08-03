@@ -49,4 +49,4 @@ systemctl daemon-reload
 systemctl stop glint
 systemctl enable glint
 systemctl start glint
-# systemctl status glint
+systemctl status glint
