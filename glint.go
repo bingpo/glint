@@ -67,7 +67,8 @@ import (
 
 /*
  */
-var DefaultPlugins = cli.NewStringSlice("xss", "cmdinject", "jsonp", "xxe", "crlf", "csrf", "cors", "sql",
+//
+var DefaultPlugins = cli.NewStringSlice("xss", "sql", "cmdinject", "jsonp", "xxe", "crlf", "csrf", "cors",
 	"apperror", "dir_coss",
 	"tls", "fileinclude", "ssrf", "upfile", "csp", "textmatch", "weakattack", "bigpwdattack", "php_deserialization",
 	"cookie", "hsts", "xFrameopt") //"ssrf","csrf",  "weakattack", ,
@@ -1129,13 +1130,13 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		server_control, err := NewTaskServer("proxy")
 		m.CallbackFunc = server_control.Task
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Error("proxy error %s", err.Error())
 			return err
 		}
 
 		listener, err := net.Listen("tcp", "127.0.0.1:30986")
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Error("listener0 error %s", err.Error())
 			return err
 		}
 
@@ -1145,7 +1146,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 			for {
 				con, err := listener.Accept()
 				if err != nil {
-					logger.Error(err.Error())
+					logger.Error("listener1 error %s", err.Error())
 					continue
 				}
 				go m.Listen(con)
@@ -1163,6 +1164,7 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 		s := SProxy{}
 		s.CallbackFunc = t.agentPluginRun
 		s.Run()
+
 	}
 
 	return err
@@ -1452,7 +1454,7 @@ func SocketHandler() error {
 		for {
 			con, err := listener.Accept()
 			if err != nil {
-				logger.Error(err.Error())
+				logger.Error("listener error %s", err.Error())
 				continue
 			}
 			go m.Listen(con)
