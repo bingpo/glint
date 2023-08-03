@@ -48,7 +48,8 @@ func (m *MConn) Listen(con net.Conn) {
 		peek, err := reader.Peek(4)
 		if err != nil {
 			if err != io.EOF {
-				log.Println(err.Error())
+				logger.Error("reader error %s", err.Error())
+				break
 			} else {
 				break
 			}
