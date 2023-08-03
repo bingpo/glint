@@ -3,9 +3,9 @@
 # 定义要检测的文件名
 filename="./glint" 
 # 文件名移动到对应的目录,jinkens方便部署
-bindir="./bin/"
+bindir="./bin"
 # 插入的对应目录
-installDir="/usr/local/863/"
+installDir="/usr/local/863"
 
 # 检测程序
 if [ ! -e "$filename" ]; then
@@ -33,7 +33,7 @@ systemctl stop glint
 
 
 chmod +x $bindir/glint
-cp $bindir/glint $installDir
+cp $bindir/glint $installDir/bin
 
 chmod +x $bindir/glint.service
 
