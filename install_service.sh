@@ -3,7 +3,7 @@
 # 定义要检测的文件名
 filename="./glint" 
 # 文件名移动到对应的目录,jinkens方便部署
-bindir="./bin"
+bindir="./bin/"
 # 插入的对应目录
 installDir="/usr/local/863/"
 
