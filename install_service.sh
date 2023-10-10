@@ -27,11 +27,13 @@ echo "$bindir created"
 cp ./server.key $bindir
 cp ./server.pem $bindir
 cp ./glint.service $bindir
+cp ./glint $bindir
 
 systemctl stop glint
 
+
 chmod +x $bindir/glint
-cp $bindir/glint $installDir
+cp $bindir/glint $installDir/bin
 
 chmod +x $bindir/glint.service
 
