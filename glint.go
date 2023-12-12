@@ -932,10 +932,6 @@ func (t *Task) dostartTasks(tconfig tconfig) error {
 	JSONALLURLS := make(map[string][]ast.JsonUrl, 0)
 	FileList := []crawSiteList{}
 
-	// domain := make(map[string][]interface{}, 0)
-	// element := make(map[string]interface{}, 0)
-	// domainlist := make(map[string]interface{}, 0)
-
 	if tconfig.InstallDb {
 		t.deletedbresult()
 		t.Dm.DeleteGrabUri(t.TaskId)
